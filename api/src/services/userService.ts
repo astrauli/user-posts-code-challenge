@@ -24,6 +24,24 @@ class UserService {
       createdAt: user.createdAt,
     }
   }
+
+  async getUserById(id: number): Promise<User | null> {
+    let user: User | null = await this.userRepository.getUserById(id)
+
+    if (user != null) {
+      return {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        dateOfBirth: user.dateOfBirth,
+        updatedAt: user.updatedAt,
+        createdAt: user.createdAt,
+      }
+    }
+
+    return null
+  }
 }
 
 export const getDefaultUserService = () => {

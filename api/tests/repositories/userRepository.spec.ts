@@ -1,6 +1,6 @@
 import { describe } from 'mocha'
-import chai, { assert } from 'chai'
-import { replace, fake, SinonSpy } from 'sinon'
+import chai from 'chai'
+import sinon, { replace, fake, SinonSpy } from 'sinon'
 import chaiAsPromised from 'chai-as-promised'
 import { prisma } from '../../src/prisma'
 import UserRepository from '../../src/repositories/userRepository'
@@ -10,8 +10,9 @@ chai.use(chaiAsPromised)
 describe('UserRepository', () => {
   var userRepository: UserRepository
   var fakeCreate: SinonSpy
+  var fakeFindUniqueById: SinonSpy
 
-  beforeEach(() => {
+  before(() => {
     let userCreated = {
       id: 1,
       username: 'any',
@@ -23,20 +24,43 @@ describe('UserRepository', () => {
     }
 
     fakeCreate = replace(prisma.user, 'create', fake.resolves(userCreated))
+    fakeFindUniqueById = replace(prisma.user, 'findUnique', fake.resolves(userCreated))
 
     userRepository = new UserRepository(prisma.user)
   })
 
   describe('#createUser', () => {
     it('should create a user', async () => {
+      let username = 'input username'
+      let email = 'input email'
+      let fullName = 'input fullName'
+      let dateOfBirth = 'input dateOfBirth'
+
       await userRepository.createUser({
-        username: 'any',
-        email: 'any',
-        fullName: 'any',
-        dateOfBirth: 'any',
+        username,
+        email,
+        fullName,
+        dateOfBirth,
       })
 
-      assert.equal(fakeCreate.callCount, 1)
+      sinon.assert.calledOnce(fakeCreate)
+      sinon.assert.calledWith(fakeCreate, {
+        data: {
+          username,
+          email,
+          fullName,
+          dateOfBirth,
+        },
+      })
+    })
+  })
+
+  describe('#getUserById', () => {
+    it('should fetch a user', async () => {
+      await userRepository.getUserById(1)
+
+      sinon.assert.calledOnce(fakeFindUniqueById)
+      sinon.assert.calledWith(fakeFindUniqueById, { where: { id: 1 } })
     })
   })
 })

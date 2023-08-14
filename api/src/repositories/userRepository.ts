@@ -12,6 +12,10 @@ class UserRepository {
   async createUser(user: CreateUserInput): Promise<User> {
     return await this.userClient.create({ data: user })
   }
+
+  async getUserById(id: number): Promise<User> {
+    return await this.userClient.findUnique({ where: { id } })
+  }
 }
 
 export const getDefaultUserRepository = (): UserRepository => {

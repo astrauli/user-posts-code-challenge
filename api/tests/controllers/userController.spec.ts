@@ -3,47 +3,52 @@ import chai, { expect } from 'chai'
 import sinon, { SinonSpy, fake, stub } from 'sinon'
 import chaiAsPromised from 'chai-as-promised'
 import { Request } from 'express'
-import { prisma } from '../../src/prisma'
-import { createUser } from '../../src/controllers/userController'
+import { createUser, getUserById } from '../../src/controllers/userController'
 import UserService from '../../src/services/userService'
-import UserRepository from '../../src/repositories/userRepository'
+import { getDefaultUserRepository } from '../../src/repositories/userRepository'
 
 chai.use(chaiAsPromised)
 
 describe('UserController', () => {
-  var userRepository: UserRepository
   var userService: UserService
 
   var createUserWithStub: Function
+  var getUserByIdWithStub: Function
   var fakeUserServiceCreateUser: SinonSpy
+  var fakeUserServiceGetUserById: SinonSpy
 
-  beforeEach(() => {
-    userRepository = new UserRepository(prisma.user)
-    userService = new UserService(userRepository)
-
-    let id = 1
-    let username = 'test_username'
-    let email = 'test@test.com'
-    let fullName = 'Locker Challenge'
-    let dateOfBirth = '2023-08-12'
-
-    let userCreated = {
-      id,
-      username,
-      email,
-      fullName,
-      dateOfBirth: new Date(dateOfBirth),
-      updatedAt: new Date(),
-      createdAt: new Date(),
-    }
-
-    fakeUserServiceCreateUser = sinon.replace(userService, 'createUser', fake.resolves(userCreated))
-
-    createUserWithStub = createUser(userService)
+  before(() => {
+    userService = new UserService(getDefaultUserRepository())
   })
 
   describe('#createUser', () => {
-    it('should return pass the correct user params to the user service', async () => {
+    before(() => {
+      let id = 1
+      let username = 'test_username'
+      let email = 'test@test.com'
+      let fullName = 'Locker Challenge'
+      let dateOfBirth = '2023-08-12'
+
+      let user = {
+        id,
+        username,
+        email,
+        fullName,
+        dateOfBirth: new Date(dateOfBirth),
+        updatedAt: new Date(),
+        createdAt: new Date(),
+      }
+
+      fakeUserServiceCreateUser = sinon.replace(userService, 'createUser', fake.resolves(user))
+
+      createUserWithStub = createUser(userService)
+    })
+
+    after(() => {
+      sinon.restore()
+    })
+
+    it('should pass the correct user params to the user service', async () => {
       let username = 'test_username'
       let email = 'test@test.com'
       let fullName = 'Locker Challenge'
@@ -97,7 +102,131 @@ describe('UserController', () => {
 
       await createUserWithStub(mockRequest, mockResponse)
 
-      expect(mockResponse.status.calledWith(201)).to.be.true
+      sinon.assert.calledWith(mockResponse.status, 201)
+    })
+  })
+
+  describe('#getUserById', () => {
+    describe('user found', () => {
+      before(() => {
+        let id = 1
+        let username = 'test_username'
+        let email = 'test@test.com'
+        let fullName = 'Locker Challenge'
+        let dateOfBirth = '2023-08-12'
+
+        let userServiceResult = {
+          id,
+          username,
+          email,
+          fullName,
+          dateOfBirth: new Date(dateOfBirth),
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        }
+
+        fakeUserServiceGetUserById = sinon.replace(
+          userService,
+          'getUserById',
+          fake.resolves(userServiceResult)
+        )
+
+        getUserByIdWithStub = getUserById(userService)
+      })
+
+      after(() => {
+        sinon.restore()
+      })
+
+      it('should get user by id', async () => {
+        const userId = 1
+
+        const mockRequest = {
+          params: { id: userId },
+        } as unknown as Request
+
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await getUserByIdWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(fakeUserServiceGetUserById, userId)
+      })
+
+      it('should return a 200 code', async () => {
+        const userId = 1
+
+        const mockRequest = {
+          params: { id: userId },
+        } as unknown as Request
+
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await getUserByIdWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.status, 200)
+      })
+    })
+
+    describe('user not found', () => {
+      before(() => {
+        let userServiceResult = null
+
+        fakeUserServiceGetUserById = sinon.replace(
+          userService,
+          'getUserById',
+          fake.resolves(userServiceResult)
+        )
+
+        getUserByIdWithStub = getUserById(userService)
+      })
+
+      after(() => {
+        sinon.restore()
+      })
+
+      it('should return null', async () => {
+        const userId = 1
+
+        const mockRequest = {
+          params: { id: userId },
+        } as unknown as Request
+
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await getUserByIdWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.json, { data: null })
+      })
+
+      it('should return a 404 code', async () => {
+        const userId = 1
+
+        const mockRequest = {
+          params: { id: userId },
+        } as unknown as Request
+
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await getUserByIdWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.status, 404)
+      })
     })
   })
 })
