@@ -34,7 +34,7 @@ model Post {
   userId      Int                                          @map("user_id")
   updatedAt   DateTime  @db.Timestamptz   @updatedAt       @map("updated_at")
   createdAt   DateTime  @db.Timestamptz   @default(now())  @map("created_at")
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("posts")
   @@index([userId])
