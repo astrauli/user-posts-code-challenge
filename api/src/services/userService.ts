@@ -69,11 +69,11 @@ class UserService {
 }
 
 export const validateCreateUserInput = (userData: CreateUserInput): ValidationError | null => {
-  if (userData.username == null) {
+  if (userData.username == null || userData.username == undefined) {
     return new ValidationError(ValidationCode.MISSING_FIELD, 'Username required')
   }
 
-  if (userData.email == null) {
+  if (userData.email == null || userData.email == undefined) {
     return new ValidationError(ValidationCode.MISSING_FIELD, 'Email required')
   }
 
