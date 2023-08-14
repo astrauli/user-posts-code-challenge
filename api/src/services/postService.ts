@@ -5,19 +5,40 @@ import UpdatePostInput from '../types/UpdatePostInput'
 import CreatePostInput from '../types/CreatePostInput'
 import { ValidationError, ValidationCode } from '../util/validations/ValidationError'
 
+/**
+ * A service for handling post-related operations.
+ *
+ * @class
+ */
 class PostService {
   postRepository: PostRepository
 
+  /**
+   * Constructs a new PostService instance.
+   *
+   * @constructor
+   * @param {PostRepository} postRepository - The post repository to use.
+   */
   constructor(postRepository: PostRepository) {
     this.postRepository = postRepository
   }
 
-  async createPostByUserId(id: number, postData: CreatePostInput): Promise<Post | ValidationError> {
+  /**
+   * Creates a new post for a specified user.
+   *
+   * @param {number} userId - The ID of the user creating the post.
+   * @param {CreatePostInput} postData - The post data for creation.
+   * @returns {Promise<Post | ValidationError>} The created post or a validation error.
+   */
+  async createPostByUserId(
+    userId: number,
+    postData: CreatePostInput
+  ): Promise<Post | ValidationError> {
     const error = validateCreatePostInput(postData)
 
     if (error != null) return error
 
-    const post: Post = await this.postRepository.createPostByUserId(id, postData)
+    const post: Post = await this.postRepository.createPostByUserId(userId, postData)
 
     return {
       id: post.id,
@@ -29,6 +50,12 @@ class PostService {
     }
   }
 
+  /**
+   * Retrieves a post by its ID.
+   *
+   * @param {number} id - The ID of the post to retrieve.
+   * @returns {Promise<Post | null>} The retrieved post or null if not found.
+   */
   async getPostById(id: number): Promise<Post | null> {
     const post: Post | null = await this.postRepository.getPostById(id)
 
@@ -46,6 +73,13 @@ class PostService {
     return null
   }
 
+  /**
+   * Updates a post by its ID.
+   *
+   * @param {number} id - The ID of the post to update.
+   * @param {UpdatePostInput} postData - The updated post data.
+   * @returns {Promise<Post | ValidationError | null>} The updated post, a validation error, or null if not found.
+   */
   async updatePostById(
     id: number,
     postData: UpdatePostInput
@@ -66,14 +100,33 @@ class PostService {
     }
   }
 
+  /**
+   * Deletes a post by its ID.
+   *
+   * @param {number} id - The ID of the post to delete.
+   * @returns {Promise<Post>} The deleted post.
+   */
   async deletePostById(id: number): Promise<Post> {
     return await this.postRepository.deletePostById(id)
   }
 }
 
+/**
+ * Maximum length for the title input.
+ */
 export const MAX_TITLE_INPUT = 255
+
+/**
+ * Maximum length for the description input.
+ */
 export const MAX_DESCRIPTION_INPUT = 500
 
+/**
+ * Validates the input data for creating a post.
+ *
+ * @param {CreatePostInput} postData - The post data for creation.
+ * @returns {ValidationError | null} A validation error or null if data is valid.
+ */
 export const validateCreatePostInput = (postData: CreatePostInput): ValidationError | null => {
   if (postData.title == null || postData.title == undefined) {
     return new ValidationError(ValidationCode.MISSING_FIELD, 'Title required')
@@ -100,6 +153,12 @@ export const validateCreatePostInput = (postData: CreatePostInput): ValidationEr
   return null
 }
 
+/**
+ * Validates the input data for updating a post.
+ *
+ * @param {UpdatePostInput} postData - The updated post data.
+ * @returns {ValidationError | null} A validation error or null if data is valid.
+ */
 export const validateUpdatePostInput = (postData: UpdatePostInput): ValidationError | null => {
   if (postData.title && postData.title.length > MAX_TITLE_INPUT) {
     return new ValidationError(
@@ -118,7 +177,12 @@ export const validateUpdatePostInput = (postData: UpdatePostInput): ValidationEr
   return null
 }
 
-export const getDefaultPostService = () => {
+/**
+ * Returns a default instance of PostService with a default post repository.
+ *
+ * @returns {PostService} A default PostService instance.
+ */
+export const getDefaultPostService = (): PostService => {
   let postRepo = getDefaultPostRepository()
 
   return new PostService(postRepo)
