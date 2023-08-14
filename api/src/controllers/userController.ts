@@ -4,7 +4,7 @@ import UserService, { getDefaultUserService } from '../services/userService'
 import CreateUserInput from '../types/CreateUserInput'
 import { ERROR_CODES } from '../prisma'
 import { ValidationError } from '../util/validations/ValidationError'
-import { User } from '@prisma/client'
+import { User, Post } from '@prisma/client'
 
 export const createUser = (userService: UserService = getDefaultUserService()) => {
   return async (req: Request, res: Response): Promise<void> => {
@@ -90,6 +90,19 @@ export const deleteUserById = (userService: UserService = getDefaultUserService(
       } else {
         res.status(500).send()
       }
+    }
+  }
+}
+
+export const getUserPosts = (userService: UserService = getDefaultUserService()) => {
+  return async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.params.id
+      const posts: Post[] = await userService.getUserPosts(parseInt(userId))
+
+      res.status(200).json({ data: { posts } })
+    } catch {
+      res.status(500).send()
     }
   }
 }

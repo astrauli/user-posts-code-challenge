@@ -1,4 +1,4 @@
-import { User } from '@prisma/client'
+import { User, Post } from '@prisma/client'
 
 import UserRepository, { getDefaultUserRepository } from '../repositories/userRepository'
 import CreateUserInput from '../types/CreateUserInput'
@@ -65,6 +65,10 @@ class UserService {
 
   async deleteUserById(id: number): Promise<User> {
     return await this.userRepository.deleteUserById(id)
+  }
+
+  async getUserPosts(id: number): Promise<Post[]> {
+    return await this.userRepository.getUserPosts(id)
   }
 }
 
