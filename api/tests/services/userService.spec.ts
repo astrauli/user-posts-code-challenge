@@ -2,6 +2,7 @@ import { describe } from 'mocha'
 import chai, { expect } from 'chai'
 import sinon, { fake } from 'sinon'
 import chaiAsPromised from 'chai-as-promised'
+import { Post } from '@prisma/client'
 import { prisma } from '../../src/prisma'
 import UserRepository from '../../src/repositories/userRepository'
 import UserService from '../../src/services/userService'
@@ -202,6 +203,33 @@ describe('UserService', () => {
       const user = await userService.updateUserById(id, data)
 
       expect(user).to.deep.equal(userUpdated)
+    })
+  })
+
+  describe('#getUserPosts', () => {
+    afterEach(() => {
+      sinon.restore()
+    })
+
+    it('should return a list of posts', async () => {
+      const userId = 1
+
+      const posts: Post[] = [
+        {
+          id: 1,
+          title: 'title',
+          description: 'description',
+          userId,
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        },
+      ]
+
+      sinon.replace(userRepository, 'getUserPosts', fake.resolves(posts))
+
+      const result = await userService.getUserPosts(userId)
+
+      expect(result).to.deep.equal(posts)
     })
   })
 })

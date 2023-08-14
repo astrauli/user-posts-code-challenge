@@ -3,11 +3,13 @@ import chai, { expect } from 'chai'
 import sinon, { SinonSpy, fake, stub } from 'sinon'
 import chaiAsPromised from 'chai-as-promised'
 import { Request } from 'express'
+import { Post } from '@prisma/client'
 import {
   createUser,
   getUserById,
   updateUserById,
   deleteUserById,
+  getUserPosts,
 } from '../../src/controllers/userController'
 import UserService from '../../src/services/userService'
 import { getDefaultUserRepository } from '../../src/repositories/userRepository'
@@ -17,17 +19,19 @@ import { ValidationCode, ValidationError } from '../../src/util/validations/Vali
 chai.use(chaiAsPromised)
 
 describe('UserController', () => {
-  var userService: UserService
+  let userService: UserService
 
-  var createUserWithStub: Function
-  var getUserByIdWithStub: Function
-  var updateUserByIdWithStub: Function
-  var deleteUserByIdWithStub: Function
+  let createUserWithStub: Function
+  let getUserByIdWithStub: Function
+  let updateUserByIdWithStub: Function
+  let deleteUserByIdWithStub: Function
+  let getUserPostsWithStub: Function
 
-  var fakeUserServiceCreateUser: SinonSpy
-  var fakeUserServiceGetUserById: SinonSpy
-  var fakeUserServiceUpdateUserById: SinonSpy
-  var fakeUserServiceDeleteUserById: SinonSpy
+  let fakeUserServiceCreateUser: SinonSpy
+  let fakeUserServiceGetUserById: SinonSpy
+  let fakeUserServiceUpdateUserById: SinonSpy
+  let fakeUserServiceDeleteUserById: SinonSpy
+  let fakeUserServiceUserPosts: SinonSpy
 
   before(() => {
     userService = new UserService(getDefaultUserRepository())
@@ -523,6 +527,112 @@ describe('UserController', () => {
         await deleteUserByIdWithStub(mockRequest, mockResponse)
 
         sinon.assert.calledWith(mockResponse.status, 404)
+      })
+    })
+  })
+
+  describe('#getUserPosts', () => {
+    describe('user with posts found', () => {
+      var posts: Post[]
+
+      before(() => {
+        let userId = 1
+
+        posts = [
+          {
+            id: 1,
+            title: 'title',
+            description: 'description',
+            userId,
+            updatedAt: new Date(),
+            createdAt: new Date(),
+          },
+          {
+            id: 2,
+            title: 'title',
+            description: 'description',
+            userId,
+            updatedAt: new Date(),
+            createdAt: new Date(),
+          },
+        ]
+
+        fakeUserServiceUserPosts = sinon.replace(userService, 'getUserPosts', fake.resolves(posts))
+
+        getUserPostsWithStub = getUserPosts(userService)
+      })
+
+      after(() => {
+        sinon.restore()
+      })
+
+      it('should return a 200 code', async () => {
+        const userId = 1
+
+        const mockRequest = {
+          params: { id: userId },
+        } as unknown as Request
+
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await getUserPostsWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.status, 200)
+        sinon.assert.calledWith(mockResponse.json, { data: { posts } })
+      })
+    })
+
+    describe('user with no posts', () => {
+      before(() => {
+        let posts: Post[] = []
+
+        fakeUserServiceUserPosts = sinon.replace(userService, 'getUserPosts', fake.resolves(posts))
+
+        getUserPostsWithStub = getUserPosts(userService)
+      })
+
+      after(() => {
+        sinon.restore()
+      })
+
+      it('should return a 200 code', async () => {
+        const userId = 1
+
+        const mockRequest = {
+          params: { id: userId },
+        } as unknown as Request
+
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await getUserPostsWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.status, 200)
+      })
+
+      it('should return an empty array', async () => {
+        const userId = 1
+
+        const mockRequest = {
+          params: { id: userId },
+        } as unknown as Request
+
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await getUserPostsWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.json, { data: { posts: [] } })
       })
     })
   })

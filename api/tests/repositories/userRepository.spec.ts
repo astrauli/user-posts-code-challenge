@@ -4,16 +4,17 @@ import sinon, { replace, fake, SinonSpy } from 'sinon'
 import chaiAsPromised from 'chai-as-promised'
 import { prisma } from '../../src/prisma'
 import UserRepository from '../../src/repositories/userRepository'
+import { Post } from '@prisma/client'
 
 chai.use(chaiAsPromised)
 
 describe('UserRepository', () => {
-  var userRepository: UserRepository
+  let userRepository: UserRepository
 
-  var fakeCreate: SinonSpy
-  var fakeFindUniqueById: SinonSpy
-  var fakeUpdateById: SinonSpy
-  var fakeDeleteById: SinonSpy
+  let fakeCreate: SinonSpy
+  let fakeFindUniqueById: SinonSpy
+  let fakeUpdateById: SinonSpy
+  let fakeDeleteById: SinonSpy
 
   before(() => {
     let user = {
@@ -21,7 +22,12 @@ describe('UserRepository', () => {
       username: 'any',
       email: 'any',
       fullName: 'any',
-      dateOfBirth: new Date(),
+      posts: [
+        { ...aPost({ id: 1 }) },
+        { ...aPost({ id: 2 }) },
+        { ...aPost({ id: 3 }) },
+        { ...aPost({ id: 4 }) },
+      ],
       updatedAt: new Date(),
       createdAt: new Date(),
     }
@@ -98,4 +104,36 @@ describe('UserRepository', () => {
       sinon.assert.calledWith(fakeDeleteById, { where: { id: 1 } })
     })
   })
+
+  describe('#getUserPosts', () => {
+    it('should return a list of posts', async () => {
+      await userRepository.getUserPosts(1)
+
+      sinon.assert.calledWith(fakeFindUniqueById, {
+        where: { id: 1 },
+        include: {
+          posts: {
+            orderBy: {
+              updatedAt: 'asc',
+            },
+          },
+        },
+      })
+    })
+  })
 })
+
+const aPost = (overrides?: Partial<Post>): Post => {
+  const now = new Date()
+
+  const defaultValues = {
+    id: 1,
+    title: 'title',
+    description: 'description',
+    userId: 1,
+    updatedAt: now,
+    createdAt: now,
+  }
+
+  return { ...defaultValues, ...overrides }
+}

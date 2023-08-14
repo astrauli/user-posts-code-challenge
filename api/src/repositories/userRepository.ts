@@ -1,4 +1,4 @@
-import { Prisma, User } from '@prisma/client'
+import { Prisma, User, Post } from '@prisma/client'
 import CreateUserInput from '../types/CreateUserInput'
 import UpdateUserInput from '../types/UpdateUserInput'
 import { prisma } from '../prisma'
@@ -24,6 +24,23 @@ class UserRepository {
 
   async deleteUserById(id: number): Promise<User> {
     return await this.userClient.delete({ where: { id } })
+  }
+
+  async getUserPosts(userId: number): Promise<Post[]> {
+    const user = await this.userClient.findUnique({
+      where: {
+        id: userId,
+      },
+      include: {
+        posts: {
+          orderBy: {
+            updatedAt: 'asc',
+          },
+        },
+      },
+    })
+
+    return user.posts
   }
 }
 
