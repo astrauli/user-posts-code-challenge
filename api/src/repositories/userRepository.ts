@@ -1,5 +1,6 @@
 import { Prisma, User } from '@prisma/client'
 import CreateUserInput from '../types/CreateUserInput'
+import UpdateUserInput from '../types/UpdateUserInput'
 import { prisma } from '../prisma'
 
 class UserRepository {
@@ -15,6 +16,10 @@ class UserRepository {
 
   async getUserById(id: number): Promise<User> {
     return await this.userClient.findUnique({ where: { id } })
+  }
+
+  async updateUserById(id: number, data: UpdateUserInput): Promise<User> {
+    return await this.userClient.update({ where: { id }, data })
   }
 }
 

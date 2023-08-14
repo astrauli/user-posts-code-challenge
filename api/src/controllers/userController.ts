@@ -41,3 +41,22 @@ export const getUserById = (userService: UserService = getDefaultUserService()) 
     }
   }
 }
+
+export const updateUserById = (userService: UserService = getDefaultUserService()) => {
+  return async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.params.id
+      const newData = req.body
+
+      const user = await userService.updateUserById(parseInt(userId), newData)
+
+      if (user == null) {
+        res.status(404).json({ data: null })
+      } else {
+        res.status(200).json({ data: user })
+      }
+    } catch {
+      res.status(500).send()
+    }
+  }
+}

@@ -11,6 +11,7 @@ describe('UserRepository', () => {
   var userRepository: UserRepository
   var fakeCreate: SinonSpy
   var fakeFindUniqueById: SinonSpy
+  var fakeUpdateById: SinonSpy
 
   before(() => {
     let userCreated = {
@@ -25,6 +26,7 @@ describe('UserRepository', () => {
 
     fakeCreate = replace(prisma.user, 'create', fake.resolves(userCreated))
     fakeFindUniqueById = replace(prisma.user, 'findUnique', fake.resolves(userCreated))
+    fakeUpdateById = replace(prisma.user, 'update', fake.resolves(userCreated))
 
     userRepository = new UserRepository(prisma.user)
   })
@@ -61,6 +63,27 @@ describe('UserRepository', () => {
 
       sinon.assert.calledOnce(fakeFindUniqueById)
       sinon.assert.calledWith(fakeFindUniqueById, { where: { id: 1 } })
+    })
+  })
+
+  describe('#updateUserById', () => {
+    it('should return a user', async () => {
+      let username = 'input username'
+      let email = 'input email'
+      let fullName = 'input fullName'
+      let dateOfBirth = 'input dateOfBirth'
+
+      let data = {
+        username,
+        email,
+        fullName,
+        dateOfBirth,
+      }
+
+      await userRepository.updateUserById(1, data)
+
+      sinon.assert.calledOnce(fakeUpdateById)
+      sinon.assert.calledWith(fakeUpdateById, { where: { id: 1 }, data })
     })
   })
 })

@@ -2,6 +2,7 @@ import { User } from '@prisma/client'
 
 import UserRepository from '../repositories/userRepository'
 import CreateUserInput from '../types/CreateUserInput'
+import UpdateUserInput from '../types/UpdateUserInput'
 import { getDefaultUserRepository } from '../repositories/userRepository'
 
 class UserService {
@@ -12,6 +13,8 @@ class UserService {
   }
 
   async createUser(userData: CreateUserInput): Promise<User> {
+    // TODO: Validations
+
     let user: User = await this.userRepository.createUser(userData)
 
     return {
@@ -41,6 +44,14 @@ class UserService {
     }
 
     return null
+  }
+
+  async updateUserById(id: number, data: UpdateUserInput): Promise<User | null> {
+    // TODO: Validations
+
+    let user = await this.userRepository.updateUserById(id, data)
+
+    return user
   }
 }
 
