@@ -2,6 +2,7 @@ import { User } from '@prisma/client'
 
 import UserRepository from '../repositories/userRepository'
 import CreateUserInput from '../types/CreateUserInput'
+import { getDefaultUserRepository } from '../repositories/userRepository'
 
 class UserService {
   userRepository: UserRepository
@@ -23,6 +24,12 @@ class UserService {
       createdAt: user.createdAt,
     }
   }
+}
+
+export const getDefaultUserService = () => {
+  let userRepo = getDefaultUserRepository()
+
+  return new UserService(userRepo)
 }
 
 export default UserService
