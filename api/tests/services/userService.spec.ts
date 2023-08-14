@@ -6,6 +6,8 @@ import { prisma } from '../../src/prisma'
 import UserRepository from '../../src/repositories/userRepository'
 import UserService from '../../src/services/userService'
 import { ValidationError } from '../../src/util/validations/ValidationError'
+import { User } from '@prisma/client'
+import CreateUserInput from '../../src/types/CreateUserInput'
 
 chai.use(chaiAsPromised)
 
@@ -25,85 +27,64 @@ describe('UserService', () => {
 
     describe('input validation', () => {
       it('should return a ValidationError on invalid email', async () => {
-        let badEmail = 'test'
+        const badEmail = 'test'
 
-        let id = 1
-        let username = 'test_username'
-        let fullName = 'Locker Challenge'
-        let dateOfBirth = '2023-08-12'
+        const userInput = defaultUserInput({ ...{ email: badEmail } })
 
-        let userInput = {
-          id,
-          username,
-          email: badEmail,
-          fullName,
-          dateOfBirth,
-        }
-
-        let response = await userService.createUser(userInput)
+        const response = await userService.createUser(userInput)
 
         expect(response).to.be.instanceOf(ValidationError)
       })
 
       it('should return a ValidationError on null email', async () => {
-        let badEmail = null
+        const badEmail = null
 
-        let id = 1
-        let username = 'test_username'
-        let fullName = 'Locker Challenge'
-        let dateOfBirth = '2023-08-12'
+        const userInput = defaultUserInput({ ...{ email: badEmail } })
 
-        let userInput = {
-          id,
-          username,
-          email: badEmail,
-          fullName,
-          dateOfBirth,
-        }
+        const response = await userService.createUser(userInput)
 
-        let response = await userService.createUser(userInput)
+        expect(response).to.be.instanceOf(ValidationError)
+      })
+
+      it('should return a ValidationError on undefined email', async () => {
+        const badEmail = undefined
+
+        const userInput = defaultUserInput({ ...{ email: badEmail } })
+
+        const response = await userService.createUser(userInput)
 
         expect(response).to.be.instanceOf(ValidationError)
       })
 
       it('should return a ValidationError on null username', async () => {
-        let badUsername = null
+        const badUsername = null
 
-        let id = 1
-        let fullName = 'Locker Challenge'
-        let email = 'test@test.com'
-        let dateOfBirth = '2023-08-12'
+        const userInput = defaultUserInput({ ...{ username: badUsername } })
 
-        let userInput = {
-          id,
-          username: badUsername,
-          email,
-          fullName,
-          dateOfBirth,
-        }
+        const response = await userService.createUser(userInput)
 
-        let response = await userService.createUser(userInput)
+        expect(response).to.be.instanceOf(ValidationError)
+      })
+
+      it('should return a ValidationError on undefined username', async () => {
+        const badUsername = undefined
+
+        const userInput = defaultUserInput({ ...{ username: badUsername } })
+
+        const response = await userService.createUser(userInput)
 
         expect(response).to.be.instanceOf(ValidationError)
       })
     })
 
     it('should return a user', async () => {
-      let id = 1
-      let username = 'test_username'
-      let email = 'test@test.com'
-      let fullName = 'Locker Challenge'
-      let dateOfBirth = '2023-08-12'
+      const id = 1
+      const dateOfBirth = '2023-08-12'
 
-      let userInput = {
+      const userInput = defaultUserInput({ ...{ dateOfBirth } })
+
+      const userCreated = {
         id,
-        username,
-        email,
-        fullName,
-        dateOfBirth,
-      }
-
-      let userCreated = {
         ...userInput,
         dateOfBirth: new Date(dateOfBirth),
         updatedAt: new Date(),
@@ -124,25 +105,13 @@ describe('UserService', () => {
     })
 
     it('should return a user if found', async () => {
-      let id = 1
-      let username = 'test_username'
-      let email = 'test@test.com'
-      let fullName = 'Locker Challenge'
-      let dateOfBirth = '2023-08-12'
+      const id = 1
 
-      let userFound = {
-        id,
-        username,
-        email,
-        fullName,
-        dateOfBirth: new Date(dateOfBirth),
-        updatedAt: new Date(),
-        createdAt: new Date(),
-      }
+      const userFound = defaultUser()
 
       sinon.replace(userRepository, 'getUserById', fake.resolves(userFound))
 
-      let user = await userService.getUserById(id)
+      const user = await userService.getUserById(id)
 
       expect(user).to.deep.equal(userFound)
     })
@@ -150,7 +119,7 @@ describe('UserService', () => {
     it('should return null if no user is found', async () => {
       sinon.replace(userRepository, 'getUserById', fake.resolves(null))
 
-      let user = await userService.getUserById(1)
+      const user = await userService.getUserById(1)
 
       expect(user).to.equal(null)
     })
@@ -163,28 +132,28 @@ describe('UserService', () => {
 
     describe('input validation', () => {
       it('should return a ValidationError on invalid email', async () => {
-        let badEmail = 'test'
+        const badEmail = 'test'
 
-        let data = { email: badEmail }
+        const data = { email: badEmail }
 
-        let response = await userService.updateUserById(1, data)
+        const response = await userService.updateUserById(1, data)
 
         expect(response).to.be.instanceOf(ValidationError)
       })
     })
 
     it('should return a user', async () => {
-      let id = 1
-      let username = 'test_username'
-      let email = 'test@test.com'
-      let fullName = 'Locker Challenge'
-      let dateOfBirth = '2023-08-12'
+      const id = 1
+      const username = 'test_username'
+      const email = 'test@test.com'
+      const fullName = 'Locker Challenge'
+      const dateOfBirth = '2023-08-12'
 
-      let data = {
+      const data = {
         username,
       }
 
-      let userUpdated = {
+      const userUpdated = {
         id,
         email,
         fullName,
@@ -196,7 +165,7 @@ describe('UserService', () => {
 
       sinon.replace(userRepository, 'updateUserById', fake.resolves(userUpdated))
 
-      let user = await userService.updateUserById(id, data)
+      const user = await userService.updateUserById(id, data)
 
       expect(user).to.deep.equal(userUpdated)
     })
@@ -208,17 +177,17 @@ describe('UserService', () => {
     })
 
     it('should return a user', async () => {
-      let id = 1
-      let username = 'test_username'
-      let email = 'test@test.com'
-      let fullName = 'Locker Challenge'
-      let dateOfBirth = '2023-08-12'
+      const id = 1
+      const username = 'test_username'
+      const email = 'test@test.com'
+      const fullName = 'Locker Challenge'
+      const dateOfBirth = '2023-08-12'
 
-      let data = {
+      const data = {
         username,
       }
 
-      let userUpdated = {
+      const userUpdated = {
         id,
         email,
         fullName,
@@ -230,9 +199,38 @@ describe('UserService', () => {
 
       sinon.replace(userRepository, 'updateUserById', fake.resolves(userUpdated))
 
-      let user = await userService.updateUserById(id, data)
+      const user = await userService.updateUserById(id, data)
 
       expect(user).to.deep.equal(userUpdated)
     })
   })
 })
+
+const defaultUser = (overrides?: Partial<User>): User => {
+  const now = new Date()
+
+  const defaultValues: User = {
+    id: 1,
+    fullName: 'Default fullName',
+    email: 'defaultEmail@test.com',
+    username: 'default_username',
+    dateOfBirth: now,
+    updatedAt: now,
+    createdAt: now,
+  }
+
+  return { ...defaultValues, ...overrides }
+}
+
+const defaultUserInput = (overrides?: Partial<CreateUserInput>): CreateUserInput => {
+  const now = new Date()
+
+  const defaultValues: CreateUserInput = {
+    fullName: 'Default fullName',
+    email: 'defaultEmail@test.com',
+    username: 'default_username',
+    dateOfBirth: now.toISOString(),
+  }
+
+  return { ...defaultValues, ...overrides }
+}
