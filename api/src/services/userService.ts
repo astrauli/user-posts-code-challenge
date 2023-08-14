@@ -53,6 +53,10 @@ class UserService {
 
     return user
   }
+
+  async deleteUserById(id: number): Promise<User> {
+    return await this.userRepository.deleteUserById(id)
+  }
 }
 
 export const getDefaultUserService = () => {

@@ -9,12 +9,14 @@ chai.use(chaiAsPromised)
 
 describe('UserRepository', () => {
   var userRepository: UserRepository
+
   var fakeCreate: SinonSpy
   var fakeFindUniqueById: SinonSpy
   var fakeUpdateById: SinonSpy
+  var fakeDeleteById: SinonSpy
 
   before(() => {
-    let userCreated = {
+    let user = {
       id: 1,
       username: 'any',
       email: 'any',
@@ -24,9 +26,10 @@ describe('UserRepository', () => {
       createdAt: new Date(),
     }
 
-    fakeCreate = replace(prisma.user, 'create', fake.resolves(userCreated))
-    fakeFindUniqueById = replace(prisma.user, 'findUnique', fake.resolves(userCreated))
-    fakeUpdateById = replace(prisma.user, 'update', fake.resolves(userCreated))
+    fakeCreate = replace(prisma.user, 'create', fake.resolves(user))
+    fakeFindUniqueById = replace(prisma.user, 'findUnique', fake.resolves(user))
+    fakeUpdateById = replace(prisma.user, 'update', fake.resolves(user))
+    fakeDeleteById = replace(prisma.user, 'delete', fake.resolves(user))
 
     userRepository = new UserRepository(prisma.user)
   })
@@ -84,6 +87,15 @@ describe('UserRepository', () => {
 
       sinon.assert.calledOnce(fakeUpdateById)
       sinon.assert.calledWith(fakeUpdateById, { where: { id: 1 }, data })
+    })
+  })
+
+  describe('#deleteUserById', () => {
+    it('should return a user', async () => {
+      await userRepository.deleteUserById(1)
+
+      sinon.assert.calledOnce(fakeDeleteById)
+      sinon.assert.calledWith(fakeDeleteById, { where: { id: 1 } })
     })
   })
 })

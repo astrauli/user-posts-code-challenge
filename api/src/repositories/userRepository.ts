@@ -21,6 +21,10 @@ class UserRepository {
   async updateUserById(id: number, data: UpdateUserInput): Promise<User> {
     return await this.userClient.update({ where: { id }, data })
   }
+
+  async deleteUserById(id: number): Promise<User> {
+    return await this.userClient.delete({ where: { id } })
+  }
 }
 
 export const getDefaultUserRepository = (): UserRepository => {
