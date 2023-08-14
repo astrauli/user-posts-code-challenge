@@ -30,7 +30,7 @@ class PostService {
   }
 
   async getPostById(id: number): Promise<Post | null> {
-    let post: Post | null = await this.postRepository.getPostById(id)
+    const post: Post | null = await this.postRepository.getPostById(id)
 
     if (post != null) {
       return {
@@ -46,8 +46,15 @@ class PostService {
     return null
   }
 
-  async updatePostById(id: number, postData: UpdatePostInput): Promise<Post | null> {
-    let post = await this.postRepository.updatePostById(id, postData)
+  async updatePostById(
+    id: number,
+    postData: UpdatePostInput
+  ): Promise<Post | ValidationError | null> {
+    const error = validateUpdatePostInput(postData)
+
+    if (error != null) return error
+
+    const post = await this.postRepository.updatePostById(id, postData)
 
     return {
       id: post.id,
@@ -84,6 +91,24 @@ export const validateCreatePostInput = (postData: CreatePostInput): ValidationEr
   }
 
   if (postData.description.length > MAX_DESCRIPTION_INPUT) {
+    return new ValidationError(
+      ValidationCode.INVALID_FIELD,
+      'Description length limited to 500 characters'
+    )
+  }
+
+  return null
+}
+
+export const validateUpdatePostInput = (postData: UpdatePostInput): ValidationError | null => {
+  if (postData.title && postData.title.length > MAX_TITLE_INPUT) {
+    return new ValidationError(
+      ValidationCode.INVALID_FIELD,
+      'Title length limited to 255 characters'
+    )
+  }
+
+  if (postData.description && postData.description.length > MAX_DESCRIPTION_INPUT) {
     return new ValidationError(
       ValidationCode.INVALID_FIELD,
       'Description length limited to 500 characters'

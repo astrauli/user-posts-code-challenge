@@ -139,6 +139,28 @@ describe('PostService', () => {
       sinon.restore()
     })
 
+    describe('input validation', () => {
+      it('should return a ValidationError on invalid title length', async () => {
+        const badTitle = generateString(MAX_TITLE_INPUT + 1)
+
+        const postInput = defaultPostInput({ ...{ title: badTitle } })
+
+        const response = await postService.createPostByUserId(1, postInput)
+
+        expect(response).to.be.instanceOf(ValidationError)
+      })
+
+      it('should return a ValidationError on invalid description length', async () => {
+        const badDescription = generateString(MAX_DESCRIPTION_INPUT + 1)
+
+        const postInput = defaultPostInput({ ...{ description: badDescription } })
+
+        const response = await postService.createPostByUserId(1, postInput)
+
+        expect(response).to.be.instanceOf(ValidationError)
+      })
+    })
+
     it('should return a post', async () => {
       let id = 1
       let title = 'test_title'

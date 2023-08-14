@@ -3,27 +3,138 @@ import chai, { expect } from 'chai'
 import sinon, { SinonSpy, fake, stub } from 'sinon'
 import chaiAsPromised from 'chai-as-promised'
 import { Request } from 'express'
-import { getPostById, updatePostById, deletePostById } from '../../src/controllers/postController'
+import {
+  getPostById,
+  updatePostById,
+  deletePostById,
+  createPostByUserId,
+} from '../../src/controllers/postController'
 import PostService from '../../src/services/postService'
 import { getDefaultPostRepository } from '../../src/repositories/postRepository'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { Post } from '@prisma/client'
+import { ValidationError, ValidationCode } from '../../src/util/validations/ValidationError'
 
 chai.use(chaiAsPromised)
 
 describe('PostController', () => {
   let postService: PostService
 
+  let createPostByUserIdWithStub: Function
   let getPostByIdWithStub: Function
   let updatePostByIdWithStub: Function
   let deletePostByIdWithStub: Function
 
+  let fakePostServiceCreatePostByUserId: SinonSpy
   let fakePostServiceGetPostById: SinonSpy
   let fakePostServiceUpdatePostById: SinonSpy
   let fakePostServiceDeletePostById: SinonSpy
 
   before(() => {
     postService = new PostService(getDefaultPostRepository())
+  })
+
+  describe('#createPostByUserId', () => {
+    describe('success', () => {
+      before(() => {
+        fakePostServiceCreatePostByUserId = sinon.replace(
+          postService,
+          'createPostByUserId',
+          fake.resolves(defaultPost())
+        )
+
+        createPostByUserIdWithStub = createPostByUserId(postService)
+      })
+
+      after(() => {
+        sinon.restore()
+      })
+
+      it('should pass the correct post params to the post service', async () => {
+        const userId = 1
+        const title = 'title'
+        const description = 'description'
+
+        const mockRequest = {
+          params: {
+            id: userId,
+          },
+          body: {
+            title,
+            description,
+          },
+        } as unknown as Request
+
+        const mockResponse: any = mockedResponse()
+
+        await createPostByUserIdWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(fakePostServiceCreatePostByUserId, userId, {
+          title,
+          description,
+        })
+      })
+
+      it('should return a 201 status on successful create', async () => {
+        const userId = 1
+        const title = 'title'
+        const description = 'description'
+
+        const mockRequest = {
+          params: {
+            id: userId,
+          },
+          body: {
+            title,
+            description,
+          },
+        } as unknown as Request
+
+        const mockResponse: any = mockedResponse()
+
+        await createPostByUserIdWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.status, 201)
+      })
+    })
+
+    describe('bad input', () => {
+      after(() => {
+        sinon.restore()
+      })
+
+      it('returns a 400 code', async () => {
+        const validationError = new ValidationError(ValidationCode.INVALID_FIELD, 'bad field')
+
+        fakePostServiceCreatePostByUserId = sinon.replace(
+          postService,
+          'createPostByUserId',
+          fake.resolves(validationError)
+        )
+
+        createPostByUserIdWithStub = createPostByUserId(postService)
+
+        const userId = 1
+        const title = 'any'
+        const description = 'any'
+
+        const mockRequest = {
+          params: {
+            id: userId,
+          },
+          body: {
+            title,
+            description,
+          },
+        } as unknown as Request
+
+        const mockResponse: any = mockedResponse()
+
+        await createPostByUserIdWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.status, 400)
+      })
+    })
   })
 
   describe('#getPostById', () => {

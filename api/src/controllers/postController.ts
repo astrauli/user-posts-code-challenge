@@ -58,7 +58,15 @@ export const updatePostById = (postService: PostService = getDefaultPostService(
       const postId = req.params.id
       const newData = req.body
 
-      const response: Post | null = await postService.updatePostById(parseInt(postId), newData)
+      const response: Post | ValidationError | null = await postService.updatePostById(
+        parseInt(postId),
+        newData
+      )
+
+      if (response instanceof ValidationError) {
+        res.status(400).json({ message: response.message })
+        return
+      }
 
       if (response == null) {
         res.status(404).json({ data: null })

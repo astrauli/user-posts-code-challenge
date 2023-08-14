@@ -13,7 +13,6 @@ import UserService from '../../src/services/userService'
 import { getDefaultUserRepository } from '../../src/repositories/userRepository'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { ValidationCode, ValidationError } from '../../src/util/validations/ValidationError'
-import { measureMemory } from 'vm'
 
 chai.use(chaiAsPromised)
 
