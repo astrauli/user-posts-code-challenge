@@ -1,12 +1,13 @@
-import BodyParser from "body-parser";
-import { Request, Response } from "express";
-import Router from "express-promise-router";
-import { prisma } from "./prisma";
+import BodyParser from 'body-parser'
+import Router from 'express-promise-router'
+import UserRoute from './routes/userRoute'
+import PostRoute from './routes/postRoute'
 
-const router = Router();
+const router = Router()
 
-router.get("/hello", (_, res) => res.send("Hello World!"));
+router.use(BodyParser.json())
 
-// TODO: Add your routes here
+router.use('/api/users', UserRoute)
+router.use('/api/posts', PostRoute)
 
-export default router;
+export default router
