@@ -3,6 +3,36 @@ import { Request, Response } from 'express'
 import PostService, { getDefaultPostService } from '../services/postService'
 import { Post } from '@prisma/client'
 import { ERROR_CODES } from '../prisma'
+import CreatePostInput from '../types/CreatePostInput'
+import { ValidationError } from '../util/validations/ValidationError'
+
+export const createPostByUserId = (postService: PostService = getDefaultPostService()) => {
+  return async (req: Request, res: Response): Promise<void> => {
+    try {
+      const data = req.body
+      const userId = req.params.id
+
+      const postPayload: CreatePostInput = {
+        title: data.title,
+        description: data.description,
+      }
+
+      const response: Post | ValidationError = await postService.createPostByUserId(
+        parseInt(userId),
+        postPayload
+      )
+
+      if (response instanceof ValidationError) {
+        res.status(400).json({ message: response.message })
+        return
+      }
+
+      res.status(201).json({ data: response })
+    } catch {
+      res.status(500).send()
+    }
+  }
+}
 
 export const getPostById = (postService: PostService = getDefaultPostService()) => {
   return async (req: Request, res: Response): Promise<void> => {

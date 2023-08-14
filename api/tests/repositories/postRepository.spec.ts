@@ -10,6 +10,7 @@ chai.use(chaiAsPromised)
 describe('PostRepository', () => {
   let postRepository: PostRepository
 
+  let fakeCreatePostByUserId: SinonSpy
   let fakeFindUniqueById: SinonSpy
   let fakeUpdateById: SinonSpy
   let fakeDeleteById: SinonSpy
@@ -23,11 +24,34 @@ describe('PostRepository', () => {
       createdAt: new Date(),
     }
 
+    fakeCreatePostByUserId = replace(prisma.post, 'create', fake.resolves(post))
     fakeFindUniqueById = replace(prisma.post, 'findUnique', fake.resolves(post))
     fakeUpdateById = replace(prisma.post, 'update', fake.resolves(post))
     fakeDeleteById = replace(prisma.post, 'delete', fake.resolves(post))
 
     postRepository = new PostRepository(prisma.post)
+  })
+
+  describe('#createPostByUserId', () => {
+    it('should create a post', async () => {
+      const userId = 1
+      const title = 'input title'
+      const description = 'input description'
+
+      await postRepository.createPostByUserId(userId, {
+        title,
+        description,
+      })
+
+      sinon.assert.calledOnce(fakeCreatePostByUserId)
+      sinon.assert.calledWith(fakeCreatePostByUserId, {
+        data: {
+          userId,
+          title,
+          description,
+        },
+      })
+    })
   })
 
   describe('#getPostById', () => {
@@ -41,10 +65,10 @@ describe('PostRepository', () => {
 
   describe('#updatePostById', () => {
     it('should return a post', async () => {
-      let title = 'input title'
-      let description = 'input description'
+      const title = 'input title'
+      const description = 'input description'
 
-      let data = {
+      const data = {
         title,
         description,
       }

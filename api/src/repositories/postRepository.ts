@@ -10,6 +10,15 @@ class PostRepository {
     this.postClient = postClient
   }
 
+  async createPostByUserId(userId: number, post: CreatePostInput): Promise<Post> {
+    return await this.postClient.create({
+      data: {
+        userId,
+        ...post,
+      },
+    })
+  }
+
   async getPostById(id: number): Promise<Post> {
     return await this.postClient.findUnique({ where: { id } })
   }

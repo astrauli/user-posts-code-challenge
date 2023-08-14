@@ -46,8 +46,28 @@ describe('UserService', () => {
         expect(response).to.be.instanceOf(ValidationError)
       })
 
+      it('should return a ValidationError on undefined email', async () => {
+        const badEmail = undefined
+
+        const userInput = defaultUserInput({ ...{ email: badEmail } })
+
+        const response = await userService.createUser(userInput)
+
+        expect(response).to.be.instanceOf(ValidationError)
+      })
+
       it('should return a ValidationError on null username', async () => {
         const badUsername = null
+
+        const userInput = defaultUserInput({ ...{ username: badUsername } })
+
+        const response = await userService.createUser(userInput)
+
+        expect(response).to.be.instanceOf(ValidationError)
+      })
+
+      it('should return a ValidationError on undefined username', async () => {
+        const badUsername = undefined
 
         const userInput = defaultUserInput({ ...{ username: badUsername } })
 

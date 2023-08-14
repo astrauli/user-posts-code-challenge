@@ -1,9 +1,15 @@
 import { Router } from 'express'
 
-import { getPostById, updatePostById, deletePostById } from '../controllers/postController'
+import {
+  getPostById,
+  updatePostById,
+  deletePostById,
+  createPostByUserId,
+} from '../controllers/postController'
 
 const router = Router()
 
+router.post('/user/:id', createPostByUserId())
 router.get('/:id', getPostById())
 router.put('/:id', updatePostById())
 router.delete('/:id', deletePostById())
