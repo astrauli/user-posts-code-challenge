@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { Request, RequestHandler, Response } from 'express'
 
 import PostService, { getDefaultPostService } from '../services/postService'
 import { Post } from '@prisma/client'
@@ -6,10 +6,42 @@ import { ERROR_CODES } from '../prisma'
 import CreatePostInput from '../types/CreatePostInput'
 import { ValidationError } from '../util/validations/ValidationError'
 
-export const createPostByUserId = (postService: PostService = getDefaultPostService()) => {
+interface CreatePostRequestBody {
+  title: string
+  description: string
+}
+
+interface UpdatePostRequestBody {
+  title?: string
+  description?: string
+}
+
+/**
+ * Creates a user post.
+ *
+ * @param {PostService} postService - The post service to perform the creation.
+ * @returns {RequestHandler} Express.js route handler function.
+ */
+export const createPostByUserId = (
+  postService: PostService = getDefaultPostService()
+): RequestHandler => {
+  /**
+   * Express.js route handler for creating a post.
+   *
+   * @param {Request} req - Express.js request object.
+   * @param {Response} res - Express.js response object.
+   * @returns {Promise<void>} A Promise that resolves once the operation is completed.
+   *
+   * Param properties
+   * @property {string} req.param.id - The user ID of the user to create the post for.
+   *
+   * Body properties
+   * @property {string} req.body.title - The title of the new post.
+   * @property {string} req.body.description - The description of the new post.
+   */
   return async (req: Request, res: Response): Promise<void> => {
     try {
-      const data = req.body
+      const data: CreatePostRequestBody = req.body
       const userId = req.params.id
 
       const postPayload: CreatePostInput = {
@@ -34,7 +66,22 @@ export const createPostByUserId = (postService: PostService = getDefaultPostServ
   }
 }
 
-export const getPostById = (postService: PostService = getDefaultPostService()) => {
+/**
+ * Gets a post by its ID.
+ *
+ * @param {PostService} postService - The post service to perform the fetch.
+ * @returns {RequestHandler} Express.js route handler function.
+ */
+export const getPostById = (postService: PostService = getDefaultPostService()): RequestHandler => {
+  /**
+   * Express.js route handler for fetching a post.
+   *
+   * @param {Request} req - Express.js request object.
+   * @param {Response} res - Express.js response object.
+   * @returns {Promise<void>} A Promise that resolves once the operation is completed.
+   *
+   * @property {string} req.param.id - The ID of the post to fetch.
+   */
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const postId = req.params.id
@@ -52,11 +99,33 @@ export const getPostById = (postService: PostService = getDefaultPostService()) 
   }
 }
 
-export const updatePostById = (postService: PostService = getDefaultPostService()) => {
+/**
+ * Update a post by its ID.
+ *
+ * @param {PostService} postService - The post service to perform the update.
+ * @returns {RequestHandler} Express.js route handler function.
+ */
+export const updatePostById = (
+  postService: PostService = getDefaultPostService()
+): RequestHandler => {
+  /**
+   * Express.js route handler for updating a post.
+   *
+   * @param {Request} req - Express.js request object.
+   * @param {Response} res - Express.js response object.
+   * @returns {Promise<void>} A Promise that resolves once the operation is completed.
+   *
+   * Param properties
+   * @property {string} req.param.id - The ID of the post to update.
+   *
+   * Body properties
+   * @property {string} [req.body.title] - The new title of the post (optional).
+   * @property {string} [req.body.description] - The new description of the new post (optional).
+   */
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const postId = req.params.id
-      const newData = req.body
+      const newData: UpdatePostRequestBody = req.body
 
       const response: Post | ValidationError | null = await postService.updatePostById(
         parseInt(postId),
@@ -79,7 +148,24 @@ export const updatePostById = (postService: PostService = getDefaultPostService(
   }
 }
 
-export const deletePostById = (postService: PostService = getDefaultPostService()) => {
+/**
+ * Delete a post by its ID.
+ *
+ * @param {PostService} postService - The post service to perform the deletion.
+ * @returns {RequestHandler} Express.js route handler function.
+ */
+export const deletePostById = (
+  postService: PostService = getDefaultPostService()
+): RequestHandler => {
+  /**
+   * Express.js route handler for deleting a post.
+   *
+   * @param {Request} req - Express.js request object.
+   * @param {Response} res - Express.js response object.
+   * @returns {Promise<void>} A Promise that resolves once the operation is completed.
+   *
+   * @property {string} req.param.id - The ID of the post to delete.
+   */
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const postId = req.params.id
