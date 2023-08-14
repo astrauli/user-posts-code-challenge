@@ -3,6 +3,8 @@ import { Request, Response } from 'express'
 import UserService, { getDefaultUserService } from '../services/userService'
 import CreateUserInput from '../types/CreateUserInput'
 import { ERROR_CODES } from '../prisma'
+import { ValidationError } from '../util/validations/ValidationError'
+import { User } from '@prisma/client'
 
 export const createUser = (userService: UserService = getDefaultUserService()) => {
   return async (req: Request, res: Response): Promise<void> => {
@@ -16,9 +18,14 @@ export const createUser = (userService: UserService = getDefaultUserService()) =
         dateOfBirth: new Date(data.dateOfBirth).toISOString(),
       }
 
-      const user = await userService.createUser(userPayload)
+      const response: User | ValidationError = await userService.createUser(userPayload)
 
-      res.status(201).json({ data: user })
+      if (response instanceof ValidationError) {
+        res.status(400).json({ message: response.message })
+        return
+      }
+
+      res.status(201).json({ data: response })
     } catch {
       res.status(500).send()
     }
@@ -30,7 +37,7 @@ export const getUserById = (userService: UserService = getDefaultUserService()) 
     try {
       const userId = req.params.id
 
-      const user = await userService.getUserById(parseInt(userId))
+      const user: User | null = await userService.getUserById(parseInt(userId))
 
       if (user == null) {
         res.status(404).json({ data: null })
@@ -49,12 +56,20 @@ export const updateUserById = (userService: UserService = getDefaultUserService(
       const userId = req.params.id
       const newData = req.body
 
-      const user = await userService.updateUserById(parseInt(userId), newData)
+      const response: User | ValidationError | null = await userService.updateUserById(
+        parseInt(userId),
+        newData
+      )
 
-      if (user == null) {
+      if (response instanceof ValidationError) {
+        res.status(400).json({ message: response.message })
+        return
+      }
+
+      if (response == null) {
         res.status(404).json({ data: null })
       } else {
-        res.status(200).json({ data: user })
+        res.status(200).json({ data: response })
       }
     } catch {
       res.status(500).send()
@@ -66,8 +81,7 @@ export const deleteUserById = (userService: UserService = getDefaultUserService(
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.params.id
-
-      const user = await userService.deleteUserById(parseInt(userId))
+      const user: User = await userService.deleteUserById(parseInt(userId))
 
       res.status(200).json({ data: { user } })
     } catch (e) {

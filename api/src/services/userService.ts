@@ -1,9 +1,11 @@
 import { User } from '@prisma/client'
 
-import UserRepository from '../repositories/userRepository'
+import UserRepository, { getDefaultUserRepository } from '../repositories/userRepository'
 import CreateUserInput from '../types/CreateUserInput'
 import UpdateUserInput from '../types/UpdateUserInput'
-import { getDefaultUserRepository } from '../repositories/userRepository'
+
+import { ValidationCode, ValidationError } from '../util/validations/ValidationError'
+import { isValidEmail } from '../util/validations'
 
 class UserService {
   userRepository: UserRepository
@@ -12,8 +14,10 @@ class UserService {
     this.userRepository = userRepository
   }
 
-  async createUser(userData: CreateUserInput): Promise<User> {
-    // TODO: Validations
+  async createUser(userData: CreateUserInput): Promise<User | ValidationError> {
+    const error = validateCreateUserInput(userData)
+
+    if (error != null) return error
 
     let user: User = await this.userRepository.createUser(userData)
 
@@ -46,10 +50,15 @@ class UserService {
     return null
   }
 
-  async updateUserById(id: number, data: UpdateUserInput): Promise<User | null> {
-    // TODO: Validations
+  async updateUserById(
+    id: number,
+    userData: UpdateUserInput
+  ): Promise<User | ValidationError | null> {
+    const error = validateUpdateUserInput(userData)
 
-    let user = await this.userRepository.updateUserById(id, data)
+    if (error != null) return error
+
+    let user = await this.userRepository.updateUserById(id, userData)
 
     return user
   }
@@ -57,6 +66,30 @@ class UserService {
   async deleteUserById(id: number): Promise<User> {
     return await this.userRepository.deleteUserById(id)
   }
+}
+
+export const validateCreateUserInput = (userData: CreateUserInput): ValidationError | null => {
+  if (userData.username == null) {
+    return new ValidationError(ValidationCode.MISSING_FIELD, 'Username required')
+  }
+
+  if (userData.email == null) {
+    return new ValidationError(ValidationCode.MISSING_FIELD, 'Email required')
+  }
+
+  if (!isValidEmail(userData.email)) {
+    return new ValidationError(ValidationCode.INVALID_FIELD, 'Email format incorrect')
+  }
+
+  return null
+}
+
+export const validateUpdateUserInput = (userData: UpdateUserInput): ValidationError | null => {
+  if (userData.email && !isValidEmail(userData.email)) {
+    return new ValidationError(ValidationCode.INVALID_FIELD, 'Email format incorrect')
+  }
+
+  return null
 }
 
 export const getDefaultUserService = () => {

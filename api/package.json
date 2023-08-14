@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "tsc",
     "dev": "prisma db push --accept-data-loss && prisma generate && ts-node ./src/index.ts",
-    "test": "mocha --require ts-node/register tests/**/*.spec.ts --exit"
+    "test": "mocha --require ts-node/register tests/**/*.spec.ts tests/**/**/*.spec.ts --exit"
   },
   "keywords": [],
   "author": "",

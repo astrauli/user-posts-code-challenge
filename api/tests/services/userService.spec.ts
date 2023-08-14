@@ -5,6 +5,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { prisma } from '../../src/prisma'
 import UserRepository from '../../src/repositories/userRepository'
 import UserService from '../../src/services/userService'
+import { ValidationError } from '../../src/util/validations/ValidationError'
 
 chai.use(chaiAsPromised)
 
@@ -20,6 +21,71 @@ describe('UserService', () => {
   describe('#createUser', () => {
     afterEach(() => {
       sinon.restore()
+    })
+
+    describe('input validation', () => {
+      it('should return a ValidationError on invalid email', async () => {
+        let badEmail = 'test'
+
+        let id = 1
+        let username = 'test_username'
+        let fullName = 'Locker Challenge'
+        let dateOfBirth = '2023-08-12'
+
+        let userInput = {
+          id,
+          username,
+          email: badEmail,
+          fullName,
+          dateOfBirth,
+        }
+
+        let response = await userService.createUser(userInput)
+
+        expect(response).to.be.instanceOf(ValidationError)
+      })
+
+      it('should return a ValidationError on null email', async () => {
+        let badEmail = null
+
+        let id = 1
+        let username = 'test_username'
+        let fullName = 'Locker Challenge'
+        let dateOfBirth = '2023-08-12'
+
+        let userInput = {
+          id,
+          username,
+          email: badEmail,
+          fullName,
+          dateOfBirth,
+        }
+
+        let response = await userService.createUser(userInput)
+
+        expect(response).to.be.instanceOf(ValidationError)
+      })
+
+      it('should return a ValidationError on null username', async () => {
+        let badUsername = null
+
+        let id = 1
+        let fullName = 'Locker Challenge'
+        let email = 'test@test.com'
+        let dateOfBirth = '2023-08-12'
+
+        let userInput = {
+          id,
+          username: badUsername,
+          email,
+          fullName,
+          dateOfBirth,
+        }
+
+        let response = await userService.createUser(userInput)
+
+        expect(response).to.be.instanceOf(ValidationError)
+      })
     })
 
     it('should return a user', async () => {
@@ -93,6 +159,18 @@ describe('UserService', () => {
   describe('#updateUserById', () => {
     afterEach(() => {
       sinon.restore()
+    })
+
+    describe('input validation', () => {
+      it('should return a ValidationError on invalid email', async () => {
+        let badEmail = 'test'
+
+        let data = { email: badEmail }
+
+        let response = await userService.updateUserById(1, data)
+
+        expect(response).to.be.instanceOf(ValidationError)
+      })
     })
 
     it('should return a user', async () => {

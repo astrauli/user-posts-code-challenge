@@ -12,6 +12,8 @@ import {
 import UserService from '../../src/services/userService'
 import { getDefaultUserRepository } from '../../src/repositories/userRepository'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+import { ValidationCode, ValidationError } from '../../src/util/validations/ValidationError'
+import { measureMemory } from 'vm'
 
 chai.use(chaiAsPromised)
 
@@ -33,87 +35,131 @@ describe('UserController', () => {
   })
 
   describe('#createUser', () => {
-    before(() => {
-      let id = 1
-      let username = 'test_username'
-      let email = 'test@test.com'
-      let fullName = 'Locker Challenge'
-      let dateOfBirth = '2023-08-12'
+    describe('success', () => {
+      before(() => {
+        let id = 1
+        let username = 'test_username'
+        let email = 'test@test.com'
+        let fullName = 'Locker Challenge'
+        let dateOfBirth = '2023-08-12'
 
-      let user = {
-        id,
-        username,
-        email,
-        fullName,
-        dateOfBirth: new Date(dateOfBirth),
-        updatedAt: new Date(),
-        createdAt: new Date(),
-      }
+        let user = {
+          id,
+          username,
+          email,
+          fullName,
+          dateOfBirth: new Date(dateOfBirth),
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        }
 
-      fakeUserServiceCreateUser = sinon.replace(userService, 'createUser', fake.resolves(user))
+        fakeUserServiceCreateUser = sinon.replace(userService, 'createUser', fake.resolves(user))
 
-      createUserWithStub = createUser(userService)
-    })
+        createUserWithStub = createUser(userService)
+      })
 
-    after(() => {
-      sinon.restore()
-    })
+      after(() => {
+        sinon.restore()
+      })
 
-    it('should pass the correct user params to the user service', async () => {
-      let username = 'test_username'
-      let email = 'test@test.com'
-      let fullName = 'Locker Challenge'
-      let dateOfBirth = '2023-08-12'
+      it('should pass the correct user params to the user service', async () => {
+        let username = 'test_username'
+        let email = 'test@test.com'
+        let fullName = 'Locker Challenge'
+        let dateOfBirth = '2023-08-12'
 
-      const mockRequest = {
-        body: {
+        const mockRequest = {
+          body: {
+            username,
+            fullName,
+            email,
+            dateOfBirth,
+          },
+        } as Request
+
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await createUserWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(fakeUserServiceCreateUser, {
           username,
           fullName,
           email,
-          dateOfBirth,
-        },
-      } as Request
+          dateOfBirth: new Date(dateOfBirth).toISOString(),
+        })
+      })
 
-      const mockResponse: any = {
-        send: stub().returnsThis(),
-        status: stub().returnsThis(),
-        json: stub().returnsThis(),
-      }
+      it('should return a 201 status on successful create', async () => {
+        let username = 'test_username'
+        let email = 'test@test.com'
+        let fullName = 'Locker Challenge'
+        let dateOfBirth = '2023-08-12'
 
-      await createUserWithStub(mockRequest, mockResponse)
+        const mockRequest = {
+          body: {
+            username,
+            fullName,
+            email,
+            dateOfBirth,
+          },
+        } as Request
 
-      sinon.assert.calledWith(fakeUserServiceCreateUser, {
-        username,
-        fullName,
-        email,
-        dateOfBirth: new Date(dateOfBirth).toISOString(),
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await createUserWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.status, 201)
       })
     })
 
-    it('should return a 201 status on successful create', async () => {
-      let username = 'test_username'
-      let email = 'test@test.com'
-      let fullName = 'Locker Challenge'
-      let dateOfBirth = '2023-08-12'
+    describe('bad input', () => {
+      after(() => {
+        sinon.restore()
+      })
 
-      const mockRequest = {
-        body: {
-          username,
-          fullName,
-          email,
-          dateOfBirth,
-        },
-      } as Request
+      it('returns a 400 code', async () => {
+        let validationError = new ValidationError(ValidationCode.INVALID_FIELD, 'bad field')
 
-      const mockResponse: any = {
-        send: stub().returnsThis(),
-        status: stub().returnsThis(),
-        json: stub().returnsThis(),
-      }
+        fakeUserServiceCreateUser = sinon.replace(
+          userService,
+          'createUser',
+          fake.resolves(validationError)
+        )
 
-      await createUserWithStub(mockRequest, mockResponse)
+        createUserWithStub = createUser(userService)
 
-      sinon.assert.calledWith(mockResponse.status, 201)
+        let username = 'test_username'
+        let email = 'test@test.com'
+        let fullName = 'Locker Challenge'
+        let dateOfBirth = '2023-08-12'
+
+        const mockRequest = {
+          body: {
+            username,
+            fullName,
+            email,
+            dateOfBirth,
+          },
+        } as Request
+
+        const mockResponse: any = {
+          send: stub().returnsThis(),
+          status: stub().returnsThis(),
+          json: stub().returnsThis(),
+        }
+
+        await createUserWithStub(mockRequest, mockResponse)
+
+        sinon.assert.calledWith(mockResponse.status, 400)
+      })
     })
   })
 
