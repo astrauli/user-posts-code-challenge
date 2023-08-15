@@ -129,7 +129,7 @@ export const updatePostById = (
       )
 
       if (response instanceof ValidationError) {
-        res.status(400).json({ message: response.message })
+        res.status(400).json({ code: ValidationCode[response.code], message: response.message })
         return
       }
 
