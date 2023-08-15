@@ -3,7 +3,8 @@ import { Request, Response, RequestHandler } from 'express'
 import UserService, { getDefaultUserService } from '../services/userService'
 import CreateUserInput from '../types/CreateUserInput'
 import { ValidationCode, ValidationError } from '../util/validations/ValidationError'
-import { User, Post } from '@prisma/client'
+import { Post } from '@prisma/client'
+import { UserWithoutSensitiveFields } from '../prisma'
 
 interface CreateUserRequestBody {
   username: string
@@ -47,7 +48,9 @@ export const createUser = (userService: UserService = getDefaultUserService()): 
         dateOfBirth: new Date(data.dateOfBirth).toISOString(),
       }
 
-      const response: User | ValidationError = await userService.createUser(userPayload)
+      const response: UserWithoutSensitiveFields | ValidationError = await userService.createUser(
+        userPayload
+      )
 
       if (response instanceof ValidationError) {
         res.status(400).json({ code: ValidationCode[response.code], message: response.message })
@@ -81,7 +84,9 @@ export const getUserById = (userService: UserService = getDefaultUserService()):
     try {
       const userId = req.params.id
 
-      const user: User | null = await userService.getUserById(parseInt(userId))
+      const user: UserWithoutSensitiveFields | null = await userService.getUserById(
+        parseInt(userId)
+      )
 
       if (user == null) {
         res.status(404).json({ data: null })
@@ -124,10 +129,8 @@ export const updateUserById = (
       const userId = req.params.id
       const newData: UpdateUserRequestBody = req.body
 
-      const response: User | ValidationError | null = await userService.updateUserById(
-        parseInt(userId),
-        newData
-      )
+      const response: UserWithoutSensitiveFields | ValidationError | null =
+        await userService.updateUserById(parseInt(userId), newData)
 
       if (response instanceof ValidationError) {
         res.status(400).json({ code: ValidationCode[response.code], message: response.message })
@@ -166,7 +169,8 @@ export const deleteUserById = (
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.params.id
-      const response: User | ValidationError = await userService.deleteUserById(parseInt(userId))
+      const response: UserWithoutSensitiveFields | ValidationError =
+        await userService.deleteUserById(parseInt(userId))
 
       if (response instanceof ValidationError) {
         switch (response.code) {

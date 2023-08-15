@@ -11,3 +11,7 @@ services:
       - POSTGRES_MULTIPLE_DATABASES=challenge,challenge_test
     ports:
       - '5432:5432'
+  redis:
+    image: redis:7.0
+    ports:
+      - '6379:6379'

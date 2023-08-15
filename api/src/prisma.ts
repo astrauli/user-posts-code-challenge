@@ -1,6 +1,9 @@
 import { PrismaClient } from '@prisma/client'
+import { User } from '@prisma/client'
 
 export const prisma = new PrismaClient()
+
+export type UserWithoutSensitiveFields = Omit<User, 'salt' | 'hash'>
 
 /**
  * Prisma error codes
