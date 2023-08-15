@@ -148,6 +148,7 @@ export default function Posts() {
                   type="text"
                   id="updateUserId"
                   required
+                  value={userInputId}
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
                   onChange={(e) => setUserInputId(e.target.value)}
                 />
@@ -162,6 +163,7 @@ export default function Posts() {
                   type="text"
                   id="updateId"
                   required
+                  value={inputId}
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
                   onChange={(e) => setInputId(e.target.value)}
                 />
@@ -176,6 +178,7 @@ export default function Posts() {
                   type="text"
                   id="createUsername"
                   required
+                  value={inputTitle}
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
                   onChange={(e) => setInputTitle(e.target.value)}
                 />
@@ -186,6 +189,7 @@ export default function Posts() {
                   type="text"
                   id="createFullName"
                   required
+                  value={inputDescription}
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
                   onChange={(e) => setInputDescription(e.target.value)}
                 />

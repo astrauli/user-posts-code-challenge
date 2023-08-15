@@ -169,6 +169,7 @@ export default function Home() {
                   type="text"
                   id="updateId"
                   required
+                  value={inputId}
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
                   onChange={(e) => setInputId(e.target.value)}
                 />
@@ -183,6 +184,7 @@ export default function Home() {
                   type="text"
                   id="createUsername"
                   required
+                  value={inputUsername}
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
                   onChange={(e) => setInputUsername(e.target.value)}
                 />
@@ -193,6 +195,7 @@ export default function Home() {
                   type="text"
                   id="createFullName"
                   required
+                  value={inputName}
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
                   onChange={(e) => setInputName(e.target.value)}
                 />
@@ -203,6 +206,7 @@ export default function Home() {
                   type="email"
                   id="createEmail"
                   required
+                  value={inputEmail}
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
                   onChange={(e) => setInputEmail(e.target.value)}
                 />
@@ -213,6 +217,7 @@ export default function Home() {
                   type="text"
                   id="createDateOfBirth"
                   required
+                  value={inputDob}
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
                   onChange={(e) => setInputDob(e.target.value)}
                 />
