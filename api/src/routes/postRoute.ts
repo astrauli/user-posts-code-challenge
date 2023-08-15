@@ -9,7 +9,7 @@ import {
 
 const router = Router()
 
-router.post('/user/:id', createPostByUserId())
+router.post('/', createPostByUserId())
 router.get('/:id', getPostById())
 router.put('/:id', updatePostById())
 router.delete('/:id', deletePostById())

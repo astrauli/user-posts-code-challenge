@@ -56,10 +56,8 @@ describe('PostController', () => {
         const description = 'description'
 
         const mockRequest = {
-          params: {
-            id: userId,
-          },
           body: {
+            userId,
             title,
             description,
           },
