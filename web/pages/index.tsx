@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { Inter } from 'next/font/google'
-import { createUser, updateUser } from '../client/apiClient'
+import { createUser, updateUser, getUserById } from '../client/apiClient'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const ACTION_TYPE = {
-  CREATE: 'CREATE',
-  UPDATE: 'UPDATE',
+enum ACTION_TYPE {
+  CREATE,
+  UPDATE,
+  GET,
 }
 
 export default function Home() {
@@ -15,7 +16,7 @@ export default function Home() {
   const [createInputUsername, setCreateInputUsername] = useState('')
   const [createInputDob, setCreateInputDob] = useState('')
 
-  const [updateInputId, setUpdateInputId] = useState('')
+  const [inputId, setInputId] = useState('')
 
   const [actionType, setActionType] = useState(ACTION_TYPE.CREATE)
 
@@ -29,6 +30,9 @@ export default function Home() {
         break
       case ACTION_TYPE.UPDATE:
         submitUpdateUser()
+        break
+      case ACTION_TYPE.GET:
+        submitGetUser()
         break
     }
   }
@@ -44,8 +48,14 @@ export default function Home() {
     setResponse(res.data ? res.data : res)
   }
 
+  const submitGetUser = async () => {
+    const res = await getUserById(inputId)
+
+    setResponse(res.data ? res.data : res)
+  }
+
   const submitUpdateUser = async () => {
-    const res = await updateUser(updateInputId, {
+    const res = await updateUser(inputId, {
       username: createInputUsername,
       fullName: createInputName,
       email: createInputEmail,
@@ -55,14 +65,27 @@ export default function Home() {
     setResponse(res.data ? res.data : res)
   }
 
-  const toggleAction = () => {
-    if (actionType == ACTION_TYPE.CREATE) {
-      setActionType(ACTION_TYPE.UPDATE)
-    }
+  const renderIdInput = () => {
+    return actionType == ACTION_TYPE.UPDATE || actionType == ACTION_TYPE.GET
+  }
 
-    if (actionType == ACTION_TYPE.UPDATE) {
-      setActionType(ACTION_TYPE.CREATE)
-    }
+  const renderNonIdFields = () => {
+    return actionType == ACTION_TYPE.CREATE || actionType == ACTION_TYPE.UPDATE
+  }
+
+  const toggleAction = (action: ACTION_TYPE) => {
+    clearInput()
+
+    setActionType(action)
+  }
+
+  const clearInput = () => {
+    setCreateInputName('')
+    setCreateInputEmail('')
+    setCreateInputUsername('')
+    setCreateInputDob('')
+
+    setInputId('')
   }
 
   return (
@@ -70,15 +93,28 @@ export default function Home() {
       <section className="grid grid-cols-3 gap-4">
         <div className="col-span-1">
           <span>
-            <h1 className="text-lg font-bold">
-              {actionType == ACTION_TYPE.CREATE ? 'Create' : 'Update'} User{' '}
-            </h1>
-            <span className="text-indigo-700 underline cursor-pointer" onClick={toggleAction}>
-              or {actionType == ACTION_TYPE.CREATE ? 'Update' : 'Create'} user
-            </span>
+            <h1 className="text-lg font-bold">{ACTION_TYPE[actionType]} User </h1>
+            <p
+              className="text-indigo-700 underline cursor-pointer"
+              onClick={() => toggleAction(ACTION_TYPE.UPDATE)}
+            >
+              or update user
+            </p>
+            <p
+              className="text-indigo-700 underline cursor-pointer"
+              onClick={() => toggleAction(ACTION_TYPE.CREATE)}
+            >
+              or create user
+            </p>
+            <p
+              className="text-indigo-700 underline cursor-pointer"
+              onClick={() => toggleAction(ACTION_TYPE.GET)}
+            >
+              or get user
+            </p>
           </span>
           <div className={'flex flex-col'}>
-            {actionType == ACTION_TYPE.UPDATE && (
+            {renderIdInput() && (
               <>
                 <label htmlFor="updateId" className="mb-1">
                   Id:
@@ -88,50 +124,55 @@ export default function Home() {
                   id="updateId"
                   required
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
-                  onChange={(e) => setUpdateInputId(e.target.value)}
+                  onChange={(e) => setInputId(e.target.value)}
                 />
               </>
             )}
-            <label htmlFor="createUsername" className="mb-1">
-              Username:
-            </label>
-            <input
-              type="text"
-              id="createUsername"
-              required
-              className="border-2 mb-2 py-2 pl-2 rounded-md"
-              onChange={(e) => setCreateInputUsername(e.target.value)}
-            />
-            <label htmlFor="createFullName" className="mb-1">
-              Full Name:
-            </label>
-            <input
-              type="text"
-              id="createFullName"
-              required
-              className="border-2 mb-2 py-2 pl-2 rounded-md"
-              onChange={(e) => setCreateInputName(e.target.value)}
-            />
-            <label htmlFor="createEmail" className="mb-1">
-              Email:
-            </label>
-            <input
-              type="email"
-              id="createEmail"
-              required
-              className="border-2 mb-2 py-2 pl-2 rounded-md"
-              onChange={(e) => setCreateInputEmail(e.target.value)}
-            />
-            <label htmlFor="createDateOfBirth" className="mb-1">
-              Date of Birth:
-            </label>
-            <input
-              type="text"
-              id="createDateOfBirth"
-              required
-              className="border-2 mb-2 py-2 pl-2 rounded-md"
-              onChange={(e) => setCreateInputDob(e.target.value)}
-            />
+            {renderNonIdFields() && (
+              <>
+                <label htmlFor="createUsername" className="mb-1">
+                  Username:
+                </label>
+                <input
+                  type="text"
+                  id="createUsername"
+                  required
+                  className="border-2 mb-2 py-2 pl-2 rounded-md"
+                  onChange={(e) => setCreateInputUsername(e.target.value)}
+                />
+                <label htmlFor="createFullName" className="mb-1">
+                  Full Name:
+                </label>
+                <input
+                  type="text"
+                  id="createFullName"
+                  required
+                  className="border-2 mb-2 py-2 pl-2 rounded-md"
+                  onChange={(e) => setCreateInputName(e.target.value)}
+                />
+                <label htmlFor="createEmail" className="mb-1">
+                  Email:
+                </label>
+                <input
+                  type="email"
+                  id="createEmail"
+                  required
+                  className="border-2 mb-2 py-2 pl-2 rounded-md"
+                  onChange={(e) => setCreateInputEmail(e.target.value)}
+                />
+                <label htmlFor="createDateOfBirth" className="mb-1">
+                  Date of Birth:
+                </label>
+                <input
+                  type="text"
+                  id="createDateOfBirth"
+                  required
+                  className="border-2 mb-2 py-2 pl-2 rounded-md"
+                  onChange={(e) => setCreateInputDob(e.target.value)}
+                />
+              </>
+            )}
+
             <button className="bg-emerald-100 p-4 rounded-md mt-4" onClick={submitAction}>
               Submit
             </button>
