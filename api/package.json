@@ -5,9 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "compile": "tsc",
+    "docker:up": "docker-compose -f dev/docker-compose.yml up -d --force-recreate",
     "dev": "dotenv -e .env -- prisma db push --accept-data-loss && prisma generate && ts-node ./src/index.ts",
     "push:test": "dotenv -e .env.test -- prisma db push",
-    "test": "dotenv -e .env.test -- mocha --require ts-node/register tests/**/*.spec.ts tests/**/**/*.spec.ts --exit"
+    "test": "dotenv -e .env.test -- npm run docker:up && prisma db push && mocha --require ts-node/register tests/**/*.spec.ts tests/**/**/*.spec.ts --exit"
   },
   "keywords": [],
   "author": "",
