@@ -21,3 +21,18 @@ export const createUser = async (userData: CreateUserInput) => {
     return e
   }
 }
+
+export const getUserById = async (userId: string) => {
+  try {
+    const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    return await response.json()
+  } catch (e) {
+    console.log(e)
+    return e
+  }
+}
