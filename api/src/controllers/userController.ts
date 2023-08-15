@@ -190,7 +190,7 @@ export const getUserPosts = (
   userService: UserService = getDefaultUserService()
 ): RequestHandler => {
   /**
-   * Express.js route handler for fetching a user's by their ID.
+   * Express.js route handler for fetching a user's posts by their user ID.
    *
    * @param {Request} req - Express.js request object.
    * @param {Response} res - Express.js response object.
