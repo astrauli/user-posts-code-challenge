@@ -1,139 +1,127 @@
 import { describe } from 'mocha'
-import chai from 'chai'
-import sinon, { replace, fake, SinonSpy } from 'sinon'
+import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { prisma } from '../../src/prisma'
 import UserRepository from '../../src/repositories/userRepository'
-import { Post } from '@prisma/client'
+import { Post, User } from '@prisma/client'
 
 chai.use(chaiAsPromised)
 
 describe('UserRepository', () => {
   let userRepository: UserRepository
 
-  let fakeCreate: SinonSpy
-  let fakeFindUniqueById: SinonSpy
-  let fakeUpdateById: SinonSpy
-  let fakeDeleteById: SinonSpy
+  let sharedUser: User
 
-  before(() => {
-    let user = {
-      id: 1,
-      username: 'any',
-      email: 'any',
-      fullName: 'any',
-      posts: [
-        { ...aPost({ id: 1 }) },
-        { ...aPost({ id: 2 }) },
-        { ...aPost({ id: 3 }) },
-        { ...aPost({ id: 4 }) },
-      ],
-      updatedAt: new Date(),
-      createdAt: new Date(),
-    }
+  let sharedUserUsername = 'test_username1'
+  let sharedUserEmail = 'test@test1.com'
+  let sharedUserFullName = 'test fullname'
+  let sharedUserDateOfBirth = new Date().toISOString()
+  let sharedUserId: number
 
-    fakeCreate = replace(prisma.user, 'create', fake.resolves(user))
-    fakeFindUniqueById = replace(prisma.user, 'findUnique', fake.resolves(user))
-    fakeUpdateById = replace(prisma.user, 'update', fake.resolves(user))
-    fakeDeleteById = replace(prisma.user, 'delete', fake.resolves(user))
+  let sharedPostTitle = 'shared post title'
+  let sharedPostDescription = 'shared post description'
+
+  beforeEach(async () => {
+    sharedUser = await prisma.user.create({
+      data: {
+        username: sharedUserUsername,
+        email: sharedUserEmail,
+        fullName: sharedUserFullName,
+        dateOfBirth: sharedUserDateOfBirth,
+        posts: {
+          create: {
+            title: sharedPostTitle,
+            description: sharedPostDescription,
+          },
+        },
+      },
+      include: {
+        posts: true,
+      },
+    })
+
+    sharedUserId = sharedUser.id
 
     userRepository = new UserRepository(prisma.user)
   })
 
+  afterEach(async () => {
+    const deleteUsers = prisma.user.deleteMany()
+    const deletePosts = prisma.post.deleteMany()
+    await prisma.$transaction([deleteUsers, deletePosts])
+  })
+
+  after(async () => {
+    await prisma.$disconnect()
+  })
+
   describe('#createUser', () => {
     it('should create a user', async () => {
-      let username = 'input username'
-      let email = 'input email'
-      let fullName = 'input fullName'
-      let dateOfBirth = 'input dateOfBirth'
+      const date = new Date().toISOString()
 
-      await userRepository.createUser({
+      let username = 'test_username2'
+      let email = 'test@test.com2'
+      let fullName = 'full name'
+      let dateOfBirth = date
+
+      let newUser = await userRepository.createUser({
         username,
         email,
         fullName,
         dateOfBirth,
       })
 
-      sinon.assert.calledOnce(fakeCreate)
-      sinon.assert.calledWith(fakeCreate, {
-        data: {
-          username,
-          email,
-          fullName,
-          dateOfBirth,
-        },
-      })
+      expect(newUser.email).equal(email)
+      expect(newUser.username).equal(username)
+      expect(newUser.fullName).equal(fullName)
     })
   })
 
   describe('#getUserById', () => {
     it('should fetch a user', async () => {
-      await userRepository.getUserById(1)
+      const userFetched = await userRepository.getUserById(sharedUserId)
 
-      sinon.assert.calledOnce(fakeFindUniqueById)
-      sinon.assert.calledWith(fakeFindUniqueById, { where: { id: 1 } })
-    })
-  })
-
-  describe('#updateUserById', () => {
-    it('should return a user', async () => {
-      let username = 'input username'
-      let email = 'input email'
-      let fullName = 'input fullName'
-      let dateOfBirth = 'input dateOfBirth'
-
-      let data = {
-        username,
-        email,
-        fullName,
-        dateOfBirth,
-      }
-
-      await userRepository.updateUserById(1, data)
-
-      sinon.assert.calledOnce(fakeUpdateById)
-      sinon.assert.calledWith(fakeUpdateById, { where: { id: 1 }, data })
-    })
-  })
-
-  describe('#deleteUserById', () => {
-    it('should return a user', async () => {
-      await userRepository.deleteUserById(1)
-
-      sinon.assert.calledOnce(fakeDeleteById)
-      sinon.assert.calledWith(fakeDeleteById, { where: { id: 1 } })
+      expect(userFetched.email).equal(sharedUserEmail)
+      expect(userFetched.username).equal(sharedUserUsername)
+      expect(userFetched.fullName).equal(sharedUserFullName)
     })
   })
 
   describe('#getUserPosts', () => {
     it('should return a list of posts', async () => {
-      await userRepository.getUserPosts(1)
+      const posts = await userRepository.getUserPosts(sharedUserId)
 
-      sinon.assert.calledWith(fakeFindUniqueById, {
-        where: { id: 1 },
-        include: {
-          posts: {
-            orderBy: {
-              updatedAt: 'asc',
-            },
-          },
-        },
-      })
+      expect(posts.length).to.equal(1)
+      expect(posts[0].title).to.equal(sharedPostTitle)
+      expect(posts[0].description).to.equal(sharedPostDescription)
+    })
+  })
+
+  describe('#updateUserById', () => {
+    it('should return a user', async () => {
+      const updatedEmail = 'updatedEmail@test.com'
+
+      const data = {
+        email: updatedEmail,
+      }
+
+      const updatedUser = await userRepository.updateUserById(sharedUserId, data)
+
+      expect(updatedUser.email).equal(updatedEmail)
+      expect(updatedUser.username).equal(sharedUserUsername)
+      expect(updatedUser.fullName).equal(sharedUserFullName)
+
+      sharedUserEmail = updatedEmail
+    })
+  })
+
+  describe('#deleteUserById', () => {
+    it('should return a user', async () => {
+      const deletedUser = await userRepository.deleteUserById(sharedUserId)
+
+      expect(deletedUser.email).equal(sharedUserEmail)
+      expect(deletedUser.username).equal(sharedUserUsername)
+      expect(deletedUser.fullName).equal(sharedUserFullName)
     })
   })
 })
-
-const aPost = (overrides?: Partial<Post>): Post => {
-  const now = new Date()
-
-  const defaultValues = {
-    id: 1,
-    title: 'title',
-    description: 'description',
-    userId: 1,
-    updatedAt: now,
-    createdAt: now,
-  }
-
-  return { ...defaultValues, ...overrides }
-}
