@@ -13,10 +13,10 @@ enum ACTION_TYPE {
 }
 
 export default function Home() {
-  const [createInputName, setCreateInputName] = useState('')
-  const [createInputEmail, setCreateInputEmail] = useState('')
-  const [createInputUsername, setCreateInputUsername] = useState('')
-  const [createInputDob, setCreateInputDob] = useState('')
+  const [inputName, setInputName] = useState('')
+  const [inputEmail, setInputEmail] = useState('')
+  const [inputUsername, setInputUsername] = useState('')
+  const [inputDob, setInputDob] = useState('')
 
   const [inputId, setInputId] = useState('')
 
@@ -46,10 +46,10 @@ export default function Home() {
 
   const submitCreateUser = async () => {
     const res = await createUser({
-      username: createInputUsername,
-      fullName: createInputName,
-      email: createInputEmail,
-      dateOfBirth: createInputDob,
+      username: inputUsername,
+      fullName: inputName,
+      email: inputEmail,
+      dateOfBirth: inputDob,
     })
 
     setResponse(res.data ? res.data : res)
@@ -63,10 +63,10 @@ export default function Home() {
 
   const submitUpdateUser = async () => {
     const res = await updateUser(inputId, {
-      username: createInputUsername,
-      fullName: createInputName,
-      email: createInputEmail,
-      dateOfBirth: createInputDob,
+      username: inputUsername,
+      fullName: inputName,
+      email: inputEmail,
+      dateOfBirth: inputDob,
     })
 
     setResponse(res.data ? res.data : res)
@@ -104,10 +104,10 @@ export default function Home() {
   }
 
   const clearInput = () => {
-    setCreateInputName('')
-    setCreateInputEmail('')
-    setCreateInputUsername('')
-    setCreateInputDob('')
+    setInputName('')
+    setInputEmail('')
+    setInputUsername('')
+    setInputDob('')
 
     setInputId('')
   }
@@ -183,7 +183,7 @@ export default function Home() {
                   id="createUsername"
                   required
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
-                  onChange={(e) => setCreateInputUsername(e.target.value)}
+                  onChange={(e) => setInputUsername(e.target.value)}
                 />
                 <label htmlFor="createFullName" className="mb-1">
                   Full Name:
@@ -193,7 +193,7 @@ export default function Home() {
                   id="createFullName"
                   required
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
-                  onChange={(e) => setCreateInputName(e.target.value)}
+                  onChange={(e) => setInputName(e.target.value)}
                 />
                 <label htmlFor="createEmail" className="mb-1">
                   Email:
@@ -203,7 +203,7 @@ export default function Home() {
                   id="createEmail"
                   required
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
-                  onChange={(e) => setCreateInputEmail(e.target.value)}
+                  onChange={(e) => setInputEmail(e.target.value)}
                 />
                 <label htmlFor="createDateOfBirth" className="mb-1">
                   Date of Birth:
@@ -213,7 +213,7 @@ export default function Home() {
                   id="createDateOfBirth"
                   required
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
-                  onChange={(e) => setCreateInputDob(e.target.value)}
+                  onChange={(e) => setInputDob(e.target.value)}
                 />
               </>
             )}
