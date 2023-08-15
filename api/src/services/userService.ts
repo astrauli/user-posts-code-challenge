@@ -6,7 +6,7 @@ import UpdateUserInput from '../types/UpdateUserInput'
 
 import { ValidationCode, ValidationError } from '../util/validations/ValidationError'
 import { isValidEmail } from '../util/validations'
-import { ERROR_CODES } from '../prisma'
+import { ERROR_CODES, UserWithoutSensitiveFields } from '../prisma'
 
 /**
  * A service for handling user-related operations.
@@ -30,14 +30,16 @@ class UserService {
    * Creates a new user.
    *
    * @param {CreateUserInput} userData - The user data for creation.
-   * @returns {Promise<User | ValidationError>} The created user or a validation error.
+   * @returns {Promise<UserWithoutSensitiveFields | ValidationError>} The created user or a validation error.
    */
-  async createUser(userData: CreateUserInput): Promise<User | ValidationError> {
+  async createUser(
+    userData: CreateUserInput
+  ): Promise<UserWithoutSensitiveFields | ValidationError> {
     const error = validateCreateUserInput(userData)
 
     if (error != null) return error
 
-    let user: User
+    let user: UserWithoutSensitiveFields
 
     try {
       user = await this.userRepository.createUser(userData)
@@ -65,10 +67,10 @@ class UserService {
    * Retrieves a user by their ID.
    *
    * @param {number} id - The ID of the user to retrieve.
-   * @returns {Promise<User | null>} The retrieved user or null if not found.
+   * @returns {Promise<UserWithoutSensitiveFields | null>} The retrieved user or null if not found.
    */
-  async getUserById(id: number): Promise<User | null> {
-    let user: User | null = await this.userRepository.getUserById(id)
+  async getUserById(id: number): Promise<UserWithoutSensitiveFields | null> {
+    let user: UserWithoutSensitiveFields | null = await this.userRepository.getUserById(id)
 
     if (user != null) {
       return {
@@ -90,12 +92,12 @@ class UserService {
    *
    * @param {number} id - The ID of the user to update.
    * @param {UpdateUserInput} userData - The updated user data.
-   * @returns {Promise<User | ValidationError | null>} The updated user, a validation error, or null if not found.
+   * @returns {Promise<UserWithoutSensitiveFields | ValidationError | null>} The updated user, a validation error, or null if not found.
    */
   async updateUserById(
     id: number,
     userData: UpdateUserInput
-  ): Promise<User | ValidationError | null> {
+  ): Promise<UserWithoutSensitiveFields | ValidationError | null> {
     const error = validateUpdateUserInput(userData)
 
     if (error != null) return error
@@ -106,16 +108,24 @@ class UserService {
 
     let user = await this.userRepository.updateUserById(id, userData)
 
-    return user
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      fullName: user.fullName,
+      dateOfBirth: user.dateOfBirth,
+      updatedAt: user.updatedAt,
+      createdAt: user.createdAt,
+    }
   }
 
   /**
    * Deletes a user by their ID.
    *
    * @param {number} id - The ID of the user to delete.
-   * @returns {Promise<User | ValidationError>} The deleted user.
+   * @returns {Promise<UserWithoutSensitiveFields | ValidationError>} The deleted user.
    */
-  async deleteUserById(id: number): Promise<User | ValidationError> {
+  async deleteUserById(id: number): Promise<UserWithoutSensitiveFields | ValidationError> {
     try {
       return await this.userRepository.deleteUserById(id)
     } catch (e) {

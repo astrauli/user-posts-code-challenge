@@ -15,14 +15,16 @@ datasource db {
 // --------------------------------------
 
 model User {
-  id           Int       @id               @default(autoincrement())
-  fullName     String    @db.VarChar(256)                   @map("full_name")
-  email        String    @db.VarChar(256)  @unique
-  username     String    @db.VarChar(256)  @unique
-  dateOfBirth  DateTime  @db.Date                           @map("date_of_birth")
+  id           Int        @id               @default(autoincrement())
+  fullName     String?    @db.VarChar(256)                   @map("full_name")
+  email        String?    @db.VarChar(256)  @unique
+  username     String     @db.VarChar(256)  @unique
+  dateOfBirth  DateTime?  @db.Date                           @map("date_of_birth")
   posts        Post[]    
-  updatedAt    DateTime  @db.Timestamptz   @updatedAt       @map("updated_at")
-  createdAt    DateTime  @db.Timestamptz   @default(now())  @map("created_at")
+  salt         String?
+  hash         String?
+  updatedAt    DateTime   @db.Timestamptz   @updatedAt       @map("updated_at")
+  createdAt    DateTime   @db.Timestamptz   @default(now())  @map("created_at")
 
   @@map("users")
 }

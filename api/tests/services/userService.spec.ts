@@ -3,11 +3,11 @@ import chai, { expect } from 'chai'
 import sinon, { fake } from 'sinon'
 import chaiAsPromised from 'chai-as-promised'
 import { Post } from '@prisma/client'
-import { prisma } from '../../src/prisma'
+import { prisma, UserWithoutSensitiveFields } from '../../src/prisma'
 import UserRepository from '../../src/repositories/userRepository'
 import UserService from '../../src/services/userService'
 import { ValidationError } from '../../src/util/validations/ValidationError'
-import { User } from '@prisma/client'
+
 import CreateUserInput from '../../src/types/CreateUserInput'
 
 chai.use(chaiAsPromised)
@@ -234,10 +234,12 @@ describe('UserService', () => {
   })
 })
 
-const defaultUser = (overrides?: Partial<User>): User => {
+const defaultUser = (
+  overrides?: Partial<UserWithoutSensitiveFields>
+): UserWithoutSensitiveFields => {
   const now = new Date()
 
-  const defaultValues: User = {
+  const defaultValues: UserWithoutSensitiveFields = {
     id: 1,
     fullName: 'Default fullName',
     email: 'defaultEmail@test.com',

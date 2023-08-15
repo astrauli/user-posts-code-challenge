@@ -1,7 +1,7 @@
 import { Prisma, User, Post } from '@prisma/client'
 import CreateUserInput from '../types/CreateUserInput'
 import UpdateUserInput from '../types/UpdateUserInput'
-import { prisma } from '../prisma'
+import { prisma, UserWithoutSensitiveFields } from '../prisma'
 
 /**
  * A repository for handling user-related database operations.
@@ -25,9 +25,9 @@ class UserRepository {
    * Creates a new user.
    *
    * @param {CreateUserInput} user - The user data for creation.
-   * @returns {Promise<User>} The created user.
+   * @returns {Promise<UserWithoutSensitiveFields>} The created user.
    */
-  async createUser(user: CreateUserInput): Promise<User> {
+  async createUser(user: CreateUserInput): Promise<UserWithoutSensitiveFields> {
     return await this.userClient.create({ data: user })
   }
 
@@ -35,9 +35,9 @@ class UserRepository {
    * Retrieves a user by their ID.
    *
    * @param {number} id - The ID of the user to retrieve.
-   * @returns {Promise<User>} The retrieved user.
+   * @returns {Promise<UserWithoutSensitiveFields>} The retrieved user.
    */
-  async getUserById(id: number): Promise<User> {
+  async getUserById(id: number): Promise<UserWithoutSensitiveFields> {
     return await this.userClient.findUnique({ where: { id } })
   }
 
@@ -46,9 +46,9 @@ class UserRepository {
    *
    * @param {number} id - The ID of the user to update.
    * @param {UpdateUserInput} data - The updated user data.
-   * @returns {Promise<User>} The updated user.
+   * @returns {Promise<UserWithoutSensitiveFields>} The updated user.
    */
-  async updateUserById(id: number, data: UpdateUserInput): Promise<User> {
+  async updateUserById(id: number, data: UpdateUserInput): Promise<UserWithoutSensitiveFields> {
     return await this.userClient.update({ where: { id }, data })
   }
 
@@ -57,9 +57,9 @@ class UserRepository {
    * Deleting a user will delete all of their posts.
    *
    * @param {number} id - The ID of the user to delete.
-   * @returns {Promise<User>} The deleted user.
+   * @returns {Promise<UserWithoutSensitiveFields>} The deleted user.
    */
-  async deleteUserById(id: number): Promise<User> {
+  async deleteUserById(id: number): Promise<UserWithoutSensitiveFields> {
     return await this.userClient.delete({ where: { id } })
   }
 
