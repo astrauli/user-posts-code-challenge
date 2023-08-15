@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Inter } from 'next/font/google'
-import { createUser, updateUser, getUserById } from '../client/apiClient'
+import { createUser, updateUser, getUserById, deleteUser } from '../client/apiClient'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -8,6 +8,7 @@ enum ACTION_TYPE {
   CREATE,
   UPDATE,
   GET,
+  DELETE,
 }
 
 export default function Home() {
@@ -33,6 +34,9 @@ export default function Home() {
         break
       case ACTION_TYPE.GET:
         submitGetUser()
+        break
+      case ACTION_TYPE.DELETE:
+        submitDeleteUser()
         break
     }
   }
@@ -65,8 +69,18 @@ export default function Home() {
     setResponse(res.data ? res.data : res)
   }
 
+  const submitDeleteUser = async () => {
+    const res = await deleteUser(inputId)
+
+    setResponse(res.data ? res.data : res)
+  }
+
   const renderIdInput = () => {
-    return actionType == ACTION_TYPE.UPDATE || actionType == ACTION_TYPE.GET
+    return (
+      actionType == ACTION_TYPE.UPDATE ||
+      actionType == ACTION_TYPE.GET ||
+      actionType == ACTION_TYPE.DELETE
+    )
   }
 
   const renderNonIdFields = () => {
@@ -111,6 +125,12 @@ export default function Home() {
               onClick={() => toggleAction(ACTION_TYPE.GET)}
             >
               or get user
+            </p>
+            <p
+              className="text-indigo-700 underline cursor-pointer"
+              onClick={() => toggleAction(ACTION_TYPE.DELETE)}
+            >
+              or delete user
             </p>
           </span>
           <div className={'flex flex-col'}>
