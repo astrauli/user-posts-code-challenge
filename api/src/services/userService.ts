@@ -100,6 +100,10 @@ class UserService {
 
     if (error != null) return error
 
+    if (userData.dateOfBirth != null) {
+      userData.dateOfBirth = new Date(userData.dateOfBirth).toISOString()
+    }
+
     let user = await this.userRepository.updateUserById(id, userData)
 
     return user

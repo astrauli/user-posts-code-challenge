@@ -211,7 +211,7 @@ export default function Home() {
                   onChange={(e) => setInputEmail(e.target.value)}
                 />
                 <label htmlFor="createDateOfBirth" className="mb-1">
-                  Date of Birth:
+                  Date of Birth (YYYY-MM-DD):
                 </label>
                 <input
                   type="text"
