@@ -156,12 +156,12 @@ export const createPost = async (
   let response
 
   try {
-    response = await fetch(`http://localhost:3000/api/posts/user/${userId}`, {
+    response = await fetch(`http://localhost:3000/api/posts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify({ userId, ...userData }),
     })
 
     return {

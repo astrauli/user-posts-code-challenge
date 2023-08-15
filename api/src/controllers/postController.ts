@@ -7,6 +7,7 @@ import CreatePostInput from '../types/CreatePostInput'
 import { ValidationError } from '../util/validations/ValidationError'
 
 interface CreatePostRequestBody {
+  userId: string
   title: string
   description: string
 }
@@ -32,17 +33,13 @@ export const createPostByUserId = (
    * @param {Response} res - Express.js response object.
    * @returns {Promise<void>} A Promise that resolves once the operation is completed.
    *
-   * Param properties
-   * @property {string} req.param.id - The user ID of the user to create the post for.
-   *
-   * Body properties
+   * @property {string} req.param.userId - The user ID of the user to create the post for.
    * @property {string} req.body.title - The title of the new post.
    * @property {string} req.body.description - The description of the new post.
    */
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const data: CreatePostRequestBody = req.body
-      const userId = req.params.id
 
       const postPayload: CreatePostInput = {
         title: data.title,
@@ -50,7 +47,7 @@ export const createPostByUserId = (
       }
 
       const response: Post | ValidationError = await postService.createPostByUserId(
-        parseInt(userId),
+        parseInt(data.userId),
         postPayload
       )
 
