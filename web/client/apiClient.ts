@@ -5,9 +5,17 @@ interface CreateUserInput {
   dateOfBirth: string
 }
 
-export const createUser = async (userData: CreateUserInput) => {
+interface ClientResponse {
+  result?: Promise<any>
+  status: number | undefined
+  error?: unknown
+}
+
+export const createUser = async (userData: CreateUserInput): ClientResponse => {
+  let response
+
   try {
-    const response = await fetch('http://localhost:3000/api/users', {
+    response = await fetch('http://localhost:3000/api/users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -15,10 +23,16 @@ export const createUser = async (userData: CreateUserInput) => {
       body: JSON.stringify(userData),
     })
 
-    return await response.json()
+    return {
+      result: await response.json(),
+      status: response.status,
+    }
   } catch (e) {
     console.log(e)
-    return e
+    return {
+      status: response?.status,
+      error: e as unknown,
+    }
   }
 }
 
@@ -34,8 +48,10 @@ export const updateUser = async (userId: string, userData: Partial<CreateUserInp
     }
   }
 
+  let response
+
   try {
-    const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
+    response = await fetch(`http://localhost:3000/api/users/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -43,55 +59,84 @@ export const updateUser = async (userId: string, userData: Partial<CreateUserInp
       body: JSON.stringify(scrubInput),
     })
 
-    return await response.json()
+    return {
+      result: await response.json(),
+      status: response.status,
+    }
   } catch (e) {
     console.log(e)
-    return e
+    return {
+      status: response?.status,
+      error: e as unknown,
+    }
   }
 }
 
 export const getUserById = async (userId: string) => {
+  let response
+
   try {
-    const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
+    response = await fetch(`http://localhost:3000/api/users/${userId}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     })
 
-    return await response.json()
+    return {
+      result: await response.json(),
+      status: response.status,
+    }
   } catch (e) {
     console.log(e)
-    return e
+    return {
+      status: response?.status,
+      error: e as unknown,
+    }
   }
 }
 
 export const deleteUser = async (userId: string) => {
+  let response
+
   try {
-    const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
+    response = await fetch(`http://localhost:3000/api/users/${userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
     })
 
-    return await response.json()
+    return {
+      result: await response.json(),
+      status: response.status,
+    }
   } catch (e) {
     console.log(e)
-    return e
+    return {
+      status: response?.status,
+      error: e as unknown,
+    }
   }
 }
 
 export const getUserPosts = async (userId: string) => {
+  let response
   try {
-    const response = await fetch(`http://localhost:3000/api/users/${userId}/posts`, {
+    response = await fetch(`http://localhost:3000/api/users/${userId}/posts`, {
       headers: {
         'Content-Type': 'application/json',
       },
     })
 
-    return await response.json()
+    return {
+      result: await response.json(),
+      status: response.status,
+    }
   } catch (e) {
     console.log(e)
-    return e
+    return {
+      status: response?.status,
+      error: e as unknown,
+    }
   }
 }
