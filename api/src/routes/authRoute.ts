@@ -5,30 +5,29 @@ import { prisma } from '../prisma'
 
 const router = Router()
 
-router.post(
-  '/login',
-  passport.authenticate('local', {
-    failureRedirect: '/signup',
-  }),
-  (req, res) => {
-    res.status(200).send()
-  }
-)
+router.post('/login', passport.authenticate('local'), (req, res) => {
+  res.status(200).json({ success: true })
+})
 
 router.post('/signup', async (req, res, next) => {
-  const saltHash = generateSaltHashFromPassword(req.body.password)
+  const { password, username } = req.body
 
-  const salt = saltHash.salt
-  const hash = saltHash.hash
-  const newUser = await prisma.user.create({
+  if (await prisma.user.findFirst({ where: { username } })) {
+    res.status(400).json({ error: 'User with that username exists' })
+    return
+  }
+
+  const { salt, hash } = generateSaltHashFromPassword(password)
+
+  await prisma.user.create({
     data: {
-      username: req.body.username,
-      hash: hash,
-      salt: salt,
+      username,
+      hash,
+      salt,
     },
   })
 
-  res.status(201).send()
+  res.status(201).json({ success: true })
 })
 
 export default router

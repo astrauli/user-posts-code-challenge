@@ -23,13 +23,18 @@ export const isValidPassword = (password: string, hash: string, salt: string) =>
   return hash === hashFun(password, salt)
 }
 
+interface SaltHash {
+  salt: string
+  hash: string
+}
+
 /**
  * Generates a salt and hash from the provided password.
  *
  * @param {string} password - The password to generate salt and hash for.
- * @returns {{ salt: string, hash: string }} An object containing the generated salt and hash.
+ * @returns {SaltHash} An object containing the generated salt and hash.
  */
-export const generateSaltHashFromPassword = (password: string) => {
+export const generateSaltHashFromPassword = (password: string): SaltHash => {
   const salt = crypto.randomBytes(32).toString('hex')
 
   return {

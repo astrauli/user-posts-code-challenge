@@ -232,6 +232,12 @@ export default function Home() {
           <div className="text-indigo-700 underline cursor-pointer mt-4">
             <Link href="/posts">Go to posts</Link>
           </div>
+          <div className="text-indigo-700 underline cursor-pointer mt-4">
+            <Link href="/signup">Go to signup</Link>
+          </div>
+          <div className="text-indigo-700 underline cursor-pointer mt-4">
+            <Link href="/signup">Go to login</Link>
+          </div>
         </div>
 
         <div className="col-span-2">

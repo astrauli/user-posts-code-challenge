@@ -262,3 +262,53 @@ export const deletePost = async (postId: string): Promise<ClientResponse> => {
     }
   }
 }
+
+export const signup = async (username: string, password: string): Promise<ClientResponse> => {
+  let response
+
+  try {
+    response = await fetch(`http://localhost:3000/api/auth/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    })
+
+    return {
+      result: await response.json(),
+      status: response.status,
+    }
+  } catch (e) {
+    console.log(e)
+    return {
+      status: response?.status,
+      error: e as unknown,
+    }
+  }
+}
+
+export const login = async (username: string, password: string): Promise<ClientResponse> => {
+  let response
+
+  try {
+    response = await fetch(`http://localhost:3000/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    })
+
+    return {
+      result: await response.json(),
+      status: response.status,
+    }
+  } catch (e) {
+    console.log(e)
+    return {
+      status: response?.status,
+      error: e as unknown,
+    }
+  }
+}
