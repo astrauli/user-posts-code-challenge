@@ -1,91 +1,115 @@
 import { describe } from 'mocha'
-import chai from 'chai'
-import sinon, { replace, fake, SinonSpy } from 'sinon'
+import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { prisma } from '../../src/prisma'
 import PostRepository from '../../src/repositories/postRepository'
+import { Post, User } from '@prisma/client'
+import UserRepository from '../../src/repositories/userRepository'
 
 chai.use(chaiAsPromised)
 
 describe('PostRepository', () => {
   let postRepository: PostRepository
+  let userRepository: UserRepository
 
-  let fakeCreatePostByUserId: SinonSpy
-  let fakeFindUniqueById: SinonSpy
-  let fakeUpdateById: SinonSpy
-  let fakeDeleteById: SinonSpy
+  let user: User
+  let post: Post
 
-  before(() => {
-    let post = {
-      id: 1,
-      title: 'any',
-      description: 'any',
-      updatedAt: new Date(),
-      createdAt: new Date(),
-    }
+  let sharedUserUsername = 'test_username1'
+  let sharedUserEmail = 'test@test1.com'
+  let sharedUserFullName = 'test fullname'
+  let sharedUserDateOfBirth = new Date().toISOString()
+  let sharedUserId: number
 
-    fakeCreatePostByUserId = replace(prisma.post, 'create', fake.resolves(post))
-    fakeFindUniqueById = replace(prisma.post, 'findUnique', fake.resolves(post))
-    fakeUpdateById = replace(prisma.post, 'update', fake.resolves(post))
-    fakeDeleteById = replace(prisma.post, 'delete', fake.resolves(post))
+  let sharedPostId: number
+  let sharedPostTitle = 'shared post title'
+  let sharedPostDescription = 'shared post description'
+
+  beforeEach(async () => {
+    user = await prisma.user.create({
+      data: {
+        username: sharedUserUsername,
+        email: sharedUserEmail,
+        fullName: sharedUserFullName,
+        dateOfBirth: sharedUserDateOfBirth,
+      },
+    })
+
+    sharedUserId = user.id
+
+    post = await prisma.post.create({
+      data: {
+        userId: user.id,
+        title: sharedPostTitle,
+        description: sharedPostDescription,
+      },
+    })
+
+    sharedPostId = post.id
 
     postRepository = new PostRepository(prisma.post)
+    userRepository = new UserRepository(prisma.user)
+  })
+
+  afterEach(async () => {
+    const deleteUsers = prisma.user.deleteMany()
+    const deletePosts = prisma.post.deleteMany()
+    await prisma.$transaction([deleteUsers, deletePosts])
+  })
+
+  after(async () => {
+    await prisma.$disconnect()
   })
 
   describe('#createPostByUserId', () => {
-    it('should create a post', async () => {
-      const userId = 1
-      const title = 'input title'
-      const description = 'input description'
+    it('should create a user', async () => {
+      const date = new Date().toISOString()
 
-      await postRepository.createPostByUserId(userId, {
+      let title = 'test_title'
+      let description = 'test_description'
+
+      let post = await postRepository.createPostByUserId(sharedUserId, {
         title,
         description,
       })
 
-      sinon.assert.calledOnce(fakeCreatePostByUserId)
-      sinon.assert.calledWith(fakeCreatePostByUserId, {
-        data: {
-          userId,
-          title,
-          description,
-        },
-      })
+      expect(post.title).equal(title)
+      expect(post.description).equal(description)
     })
   })
 
   describe('#getPostById', () => {
-    it('should fetch a post', async () => {
-      await postRepository.getPostById(1)
+    it('should fetch a user', async () => {
+      const fetchedPost = await postRepository.getPostById(sharedPostId)
 
-      sinon.assert.calledOnce(fakeFindUniqueById)
-      sinon.assert.calledWith(fakeFindUniqueById, { where: { id: 1 } })
+      expect(fetchedPost.title).equal(sharedPostTitle)
+      expect(fetchedPost.description).equal(sharedPostDescription)
     })
   })
 
   describe('#updatePostById', () => {
-    it('should return a post', async () => {
-      const title = 'input title'
-      const description = 'input description'
+    it('should return a user', async () => {
+      let updatedTitle = 'update title'
 
-      const data = {
-        title,
-        description,
+      let data = {
+        title: updatedTitle,
       }
 
-      await postRepository.updatePostById(1, data)
+      let updatedPost = await postRepository.updatePostById(sharedPostId, data)
 
-      sinon.assert.calledOnce(fakeUpdateById)
-      sinon.assert.calledWith(fakeUpdateById, { where: { id: 1 }, data })
+      expect(updatedPost.title).equal(updatedTitle)
+      expect(updatedPost.description).equal(sharedPostDescription)
+
+      sharedPostTitle = updatedTitle
     })
   })
 
   describe('#deletePostById', () => {
     it('should return a post', async () => {
-      await postRepository.deletePostById(1)
+      const deletedPost = await postRepository.deletePostById(sharedPostId)
 
-      sinon.assert.calledOnce(fakeDeleteById)
-      sinon.assert.calledWith(fakeDeleteById, { where: { id: 1 } })
+      expect(deletedPost.title).equal(sharedPostTitle)
+      expect(deletedPost.description).equal(sharedPostDescription)
     })
   })
 })
