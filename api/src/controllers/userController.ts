@@ -50,7 +50,7 @@ export const createUser = (userService: UserService = getDefaultUserService()): 
       const response: User | ValidationError = await userService.createUser(userPayload)
 
       if (response instanceof ValidationError) {
-        res.status(400).json({ code: response.code, message: response.message })
+        res.status(400).json({ code: ValidationCode[response.code], message: response.message })
         return
       }
 
@@ -130,7 +130,7 @@ export const updateUserById = (
       )
 
       if (response instanceof ValidationError) {
-        res.status(400).json({ code: response.code, message: response.message })
+        res.status(400).json({ code: ValidationCode[response.code], message: response.message })
         return
       }
 
@@ -171,7 +171,7 @@ export const deleteUserById = (
       if (response instanceof ValidationError) {
         switch (response.code) {
           case ValidationCode.NO_RECORD:
-            res.status(404).json({ code: response.code, message: response.message })
+            res.status(404).json({ code: ValidationCode[response.code], message: response.message })
           default:
             res.status(400).send()
         }

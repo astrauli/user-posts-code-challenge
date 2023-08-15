@@ -43,7 +43,10 @@ class UserService {
       user = await this.userRepository.createUser(userData)
     } catch (e) {
       if (e.code == ERROR_CODES.UniqueConstraint) {
-        return new ValidationError(ValidationCode.INVALID_FIELD, 'Unique field required')
+        return new ValidationError(
+          ValidationCode.INVALID_FIELD,
+          `Unique field required: ${e.meta.target}`
+        )
       }
     }
 
