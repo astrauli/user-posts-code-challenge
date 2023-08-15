@@ -42,7 +42,7 @@ The test approach was straight forward, with unit tests being written for most, 
 
 From the `/api` directory, run `npm run test`
 
-### Approach
+## Approach
 
 When approaching the project, it seemed natural to tackle the issues on a per-route basis (i.e. users and posts). The initial step I took, however, was to create a schema in Prisma and set up docker to run a local Postgres instance. While data modeling can be a natural first step, I found it interesting that the tooling influenced the project approach -- using Prisma allowed for rapid iteration and testing of the database tables itself. I also chose to take this step first so that I could kick the tires of this unfamiliar tool and catch any gotchas off the bat. From there, it was straightforward to start scaffolding the application while building out the first route. The architectural approach I took is heavily influenced by the Kotlin/Java projects I'm used to working on, granted I believe there will be trade-offs down the line if the app logic gets complex (more on that below). I used my usual approach of building projects with proper task segmentation seen in the PR history, complete with descriptions and testing plans per PR. Once I created the user and post routes, I got to work on the UI. Admittedly, I got caught up in it since I enjoy building projects a lot. Overall, I had fun building out this project. And I hope this is straightforward to follow. Happy clicking!
 
@@ -118,6 +118,31 @@ In developing the authentication feature, two main technologies were utilized --
 
 Due to time constraints, the authentication feature does not have as much robust testing as it should. In addition, the user fetching is done directly with the Prisma client, breaking all rules around the architecture described above. I hesitated merging the PR for these reasons, along with some probable bugs, but I'll let the house decide for themselves.
 
-### Conclusion
+## Errors
+
+Currently, error responses from the API either return just a status or, if it is due to validation errors, a response in the shape of below. The code field provides a way for the UI to determine error messaging or something similar if the message shouldn't be displayed directly to the user.
+
+```
+{
+  code: "SOME_CODE",
+  message: "More details about the error"
+}
+```
+
+## Additional functionality
+
+- Adding state to posts
+  - Create draft post
+  - Post becomes active/published at certain time
+- Paginated post list
+- Bulk operations
+  - Delete many posts at once
+- Tagging posts
+- OAuth client authentication
+- Ability to like posts
+- Ability to save posts
+- Upload post image
+
+## Conclusion
 
 In conclusion, the architectural decisions taken for this project, including the service-controller-repository pattern, dependency injection, dockerized Postgres setup, and Redis for session storage, contribute to building a robust, modular, and scalable backend application for the API. My hope is that these decisions would lay a strong foundation for the evolution of the app.
