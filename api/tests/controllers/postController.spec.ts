@@ -377,12 +377,7 @@ describe('PostController', () => {
         fakePostServiceGetPostById = sinon.replace(
           postService,
           'deletePostById',
-          fake.throws(
-            new PrismaClientKnownRequestError('No record found', {
-              code: 'P2025',
-              clientVersion: 'SomeClientVersion',
-            })
-          )
+          fake.resolves(new ValidationError(ValidationCode.NO_RECORD, 'no post found'))
         )
 
         deletePostByIdWithStub = deletePostById(postService)

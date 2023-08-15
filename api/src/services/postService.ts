@@ -4,6 +4,7 @@ import PostRepository, { getDefaultPostRepository } from '../repositories/postRe
 import UpdatePostInput from '../types/UpdatePostInput'
 import CreatePostInput from '../types/CreatePostInput'
 import { ValidationError, ValidationCode } from '../util/validations/ValidationError'
+import { ERROR_CODES } from '../prisma'
 
 /**
  * A service for handling post-related operations.
@@ -104,10 +105,16 @@ class PostService {
    * Deletes a post by its ID.
    *
    * @param {number} id - The ID of the post to delete.
-   * @returns {Promise<Post>} The deleted post.
+   * @returns {Promise<Post | ValidationError>} The deleted post.
    */
-  async deletePostById(id: number): Promise<Post> {
-    return await this.postRepository.deletePostById(id)
+  async deletePostById(id: number): Promise<Post | ValidationError> {
+    try {
+      return await this.postRepository.deletePostById(id)
+    } catch (e) {
+      if (e.code == ERROR_CODES.NoRecordFound) {
+        return new ValidationError(ValidationCode.NO_RECORD, 'No post by id found')
+      }
+    }
   }
 }
 

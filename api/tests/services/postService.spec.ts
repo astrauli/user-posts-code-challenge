@@ -194,9 +194,9 @@ describe('PostService', () => {
 
       const postResult = defaultPost({ ...data })
 
-      sinon.replace(postRepository, 'updatePostById', fake.resolves(postResult))
+      sinon.replace(postRepository, 'deletePostById', fake.resolves(postResult))
 
-      let post = await postService.updatePostById(id, data)
+      let post = await postService.deletePostById(id)
 
       expect(post).to.deep.equal(postResult)
     })

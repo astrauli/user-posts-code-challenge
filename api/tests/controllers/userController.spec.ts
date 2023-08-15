@@ -496,12 +496,7 @@ describe('UserController', () => {
         fakeUserServiceGetUserById = sinon.replace(
           userService,
           'deleteUserById',
-          fake.throws(
-            new PrismaClientKnownRequestError('No record found', {
-              code: 'P2025',
-              clientVersion: 'SomeClientVersion',
-            })
-          )
+          fake.resolves(new ValidationError(ValidationCode.NO_RECORD, 'no record'))
         )
 
         deleteUserByIdWithStub = deleteUserById(userService)
