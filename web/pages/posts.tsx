@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Inter } from 'next/font/google'
-import { createUser, updateUser, getUserById, deleteUser, getUserPosts } from '../client/apiClient'
+import { createPost, getPostById, updatePost, deletePost } from '../client/apiClient'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -9,15 +9,13 @@ enum ACTION_TYPE {
   UPDATE,
   GET,
   DELETE,
-  GET_POSTS,
 }
 
-export default function Home() {
-  const [inputName, setInputName] = useState('')
-  const [inputEmail, setInputEmail] = useState('')
-  const [inputUsername, setInputUsername] = useState('')
-  const [inputDob, setInputDob] = useState('')
+export default function Posts() {
+  const [inputTitle, setInputTitle] = useState('')
+  const [inputDescription, setInputDescription] = useState('')
 
+  const [userInputId, setUserInputId] = useState('')
   const [inputId, setInputId] = useState('')
 
   const [actionType, setActionType] = useState(ACTION_TYPE.CREATE)
@@ -27,69 +25,59 @@ export default function Home() {
   const submitAction = () => {
     switch (actionType) {
       case ACTION_TYPE.CREATE:
-        submitCreateUser()
+        submitCreatePost()
         break
       case ACTION_TYPE.UPDATE:
-        submitUpdateUser()
+        submitUpdatePost()
         break
       case ACTION_TYPE.GET:
-        submitGetUser()
+        submitGetPost()
         break
       case ACTION_TYPE.DELETE:
-        submitDeleteUser()
-        break
-      case ACTION_TYPE.GET_POSTS:
-        submitGetUserPosts()
+        submitDeletePost()
         break
     }
   }
 
-  const submitCreateUser = async () => {
-    const res = await createUser({
-      username: inputUsername,
-      fullName: inputName,
-      email: inputEmail,
-      dateOfBirth: inputDob,
+  const submitCreatePost = async () => {
+    const res = await createPost(userInputId, {
+      title: inputTitle,
+      description: inputDescription,
     })
 
     setResponse(res)
   }
 
-  const submitGetUser = async () => {
-    const res = await getUserById(inputId)
+  const submitGetPost = async () => {
+    const res = await getPostById(inputId)
 
     setResponse(res)
   }
 
-  const submitUpdateUser = async () => {
-    const res = await updateUser(inputId, {
-      username: inputUsername,
-      fullName: inputName,
-      email: inputEmail,
-      dateOfBirth: inputDob,
+  const submitUpdatePost = async () => {
+    const res = await updatePost(inputId, {
+      title: inputTitle,
+      description: inputDescription,
     })
 
     setResponse(res)
   }
 
-  const submitDeleteUser = async () => {
-    const res = await deleteUser(inputId)
+  const submitDeletePost = async () => {
+    const res = await deletePost(inputId)
 
     setResponse(res)
   }
 
-  const submitGetUserPosts = async () => {
-    const res = await getUserPosts(inputId)
-
-    setResponse(res)
+  const renderUserIdInput = () => {
+    return actionType == ACTION_TYPE.CREATE
   }
 
   const renderIdInput = () => {
     return (
       actionType == ACTION_TYPE.UPDATE ||
       actionType == ACTION_TYPE.GET ||
-      actionType == ACTION_TYPE.DELETE ||
-      actionType == ACTION_TYPE.GET_POSTS
+      actionType == ACTION_TYPE.DELETE
     )
   }
 
@@ -104,18 +92,15 @@ export default function Home() {
   }
 
   const clearInput = () => {
-    setInputName('')
-    setInputEmail('')
-    setInputUsername('')
-    setInputDob('')
+    setInputTitle('')
+    setInputDescription('')
 
     setInputId('')
+    setUserInputId('')
   }
 
   const actionCopy = () => {
     switch (actionType) {
-      case ACTION_TYPE.GET_POSTS:
-        return 'GET Posts from'
       default:
         return ACTION_TYPE[actionType]
     }
@@ -126,39 +111,47 @@ export default function Home() {
       <section className="grid grid-cols-3 gap-4">
         <div className="col-span-1">
           <span>
-            <h1 className="text-lg font-bold">{actionCopy()} User </h1>
+            <h1 className="text-lg font-bold">{actionCopy()} Post </h1>
             <p
               className="text-indigo-700 underline cursor-pointer"
               onClick={() => toggleAction(ACTION_TYPE.UPDATE)}
             >
-              or update user
+              or update post
             </p>
             <p
               className="text-indigo-700 underline cursor-pointer"
               onClick={() => toggleAction(ACTION_TYPE.CREATE)}
             >
-              or create user
+              or create post
             </p>
             <p
               className="text-indigo-700 underline cursor-pointer"
               onClick={() => toggleAction(ACTION_TYPE.GET)}
             >
-              or get user
+              or get post
             </p>
             <p
               className="text-indigo-700 underline cursor-pointer"
               onClick={() => toggleAction(ACTION_TYPE.DELETE)}
             >
-              or delete user
-            </p>
-            <p
-              className="text-indigo-700 underline cursor-pointer"
-              onClick={() => toggleAction(ACTION_TYPE.GET_POSTS)}
-            >
-              or get user posts
+              or delete post
             </p>
           </span>
           <div className={'flex flex-col'}>
+            {renderUserIdInput() && (
+              <>
+                <label htmlFor="updateUserId" className="mb-1">
+                  User Id:
+                </label>
+                <input
+                  type="text"
+                  id="updateUserId"
+                  required
+                  className="border-2 mb-2 py-2 pl-2 rounded-md"
+                  onChange={(e) => setUserInputId(e.target.value)}
+                />
+              </>
+            )}
             {renderIdInput() && (
               <>
                 <label htmlFor="updateId" className="mb-1">
@@ -176,44 +169,24 @@ export default function Home() {
             {renderNonIdFields() && (
               <>
                 <label htmlFor="createUsername" className="mb-1">
-                  Username:
+                  Title:
                 </label>
                 <input
                   type="text"
                   id="createUsername"
                   required
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
-                  onChange={(e) => setInputUsername(e.target.value)}
+                  onChange={(e) => setInputTitle(e.target.value)}
                 />
                 <label htmlFor="createFullName" className="mb-1">
-                  Full Name:
+                  Description:
                 </label>
                 <input
                   type="text"
                   id="createFullName"
                   required
                   className="border-2 mb-2 py-2 pl-2 rounded-md"
-                  onChange={(e) => setInputName(e.target.value)}
-                />
-                <label htmlFor="createEmail" className="mb-1">
-                  Email:
-                </label>
-                <input
-                  type="email"
-                  id="createEmail"
-                  required
-                  className="border-2 mb-2 py-2 pl-2 rounded-md"
-                  onChange={(e) => setInputEmail(e.target.value)}
-                />
-                <label htmlFor="createDateOfBirth" className="mb-1">
-                  Date of Birth:
-                </label>
-                <input
-                  type="text"
-                  id="createDateOfBirth"
-                  required
-                  className="border-2 mb-2 py-2 pl-2 rounded-md"
-                  onChange={(e) => setInputDob(e.target.value)}
+                  onChange={(e) => setInputDescription(e.target.value)}
                 />
               </>
             )}
