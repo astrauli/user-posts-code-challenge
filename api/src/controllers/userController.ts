@@ -2,8 +2,7 @@ import { Request, Response, RequestHandler } from 'express'
 
 import UserService, { getDefaultUserService } from '../services/userService'
 import CreateUserInput from '../types/CreateUserInput'
-import { ERROR_CODES } from '../prisma'
-import { ValidationError } from '../util/validations/ValidationError'
+import { ValidationCode, ValidationError } from '../util/validations/ValidationError'
 import { User, Post } from '@prisma/client'
 
 interface CreateUserRequestBody {
@@ -51,12 +50,12 @@ export const createUser = (userService: UserService = getDefaultUserService()): 
       const response: User | ValidationError = await userService.createUser(userPayload)
 
       if (response instanceof ValidationError) {
-        res.status(400).json({ message: response.message })
+        res.status(400).json({ code: response.code, message: response.message })
         return
       }
 
       res.status(201).json({ data: response })
-    } catch {
+    } catch (e) {
       res.status(500).send()
     }
   }
@@ -131,7 +130,7 @@ export const updateUserById = (
       )
 
       if (response instanceof ValidationError) {
-        res.status(400).json({ message: response.message })
+        res.status(400).json({ code: response.code, message: response.message })
         return
       }
 
@@ -167,15 +166,21 @@ export const deleteUserById = (
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.params.id
-      const user: User = await userService.deleteUserById(parseInt(userId))
+      const response: User | ValidationError = await userService.deleteUserById(parseInt(userId))
 
-      res.status(200).json({ data: { user } })
-    } catch (e) {
-      if (e.code == ERROR_CODES.NoRecordFound) {
-        res.status(404).send()
-      } else {
-        res.status(500).send()
+      if (response instanceof ValidationError) {
+        switch (response.code) {
+          case ValidationCode.NO_RECORD:
+            res.status(404).json({ code: response.code, message: response.message })
+          default:
+            res.status(400).send()
+        }
+        return
       }
+
+      res.status(200).json({ data: { user: response } })
+    } catch (e) {
+      res.status(500).send()
     }
   }
 }

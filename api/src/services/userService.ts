@@ -6,6 +6,7 @@ import UpdateUserInput from '../types/UpdateUserInput'
 
 import { ValidationCode, ValidationError } from '../util/validations/ValidationError'
 import { isValidEmail } from '../util/validations'
+import { ERROR_CODES } from '../prisma'
 
 /**
  * A service for handling user-related operations.
@@ -36,7 +37,15 @@ class UserService {
 
     if (error != null) return error
 
-    let user: User = await this.userRepository.createUser(userData)
+    let user: User
+
+    try {
+      user = await this.userRepository.createUser(userData)
+    } catch (e) {
+      if (e.code == ERROR_CODES.UniqueConstraint) {
+        return new ValidationError(ValidationCode.INVALID_FIELD, 'Unique field required')
+      }
+    }
 
     return {
       id: user.id,
@@ -99,8 +108,14 @@ class UserService {
    * @param {number} id - The ID of the user to delete.
    * @returns {Promise<User>} The deleted user.
    */
-  async deleteUserById(id: number): Promise<User> {
-    return await this.userRepository.deleteUserById(id)
+  async deleteUserById(id: number): Promise<User | ValidationError> {
+    try {
+      return await this.userRepository.deleteUserById(id)
+    } catch (e) {
+      if (e.code == ERROR_CODES.NoRecordFound) {
+        return new ValidationError(ValidationCode.NO_RECORD, 'No user by id found')
+      }
+    }
   }
 
   /**

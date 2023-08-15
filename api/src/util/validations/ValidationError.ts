@@ -6,6 +6,7 @@
 export enum ValidationCode {
   MISSING_FIELD,
   INVALID_FIELD,
+  NO_RECORD,
 }
 
 /**
