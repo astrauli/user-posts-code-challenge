@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Link from 'next/link'
 import { Inter } from 'next/font/google'
 import { createUser, updateUser, getUserById, deleteUser, getUserPosts } from '../client/apiClient'
 
@@ -221,6 +222,10 @@ export default function Home() {
             <button className="bg-emerald-100 p-4 rounded-md mt-4" onClick={submitAction}>
               Submit
             </button>
+          </div>
+
+          <div className="text-indigo-700 underline cursor-pointer mt-4">
+            <Link href="/posts">Go to posts</Link>
           </div>
         </div>
 
