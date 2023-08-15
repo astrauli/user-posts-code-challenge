@@ -106,7 +106,7 @@ class UserService {
    * Deletes a user by their ID.
    *
    * @param {number} id - The ID of the user to delete.
-   * @returns {Promise<User>} The deleted user.
+   * @returns {Promise<User | ValidationError>} The deleted user.
    */
   async deleteUserById(id: number): Promise<User | ValidationError> {
     try {

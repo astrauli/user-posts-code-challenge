@@ -2,9 +2,8 @@ import { Request, RequestHandler, Response } from 'express'
 
 import PostService, { getDefaultPostService } from '../services/postService'
 import { Post } from '@prisma/client'
-import { ERROR_CODES } from '../prisma'
 import CreatePostInput from '../types/CreatePostInput'
-import { ValidationError } from '../util/validations/ValidationError'
+import { ValidationError, ValidationCode } from '../util/validations/ValidationError'
 
 interface CreatePostRequestBody {
   userId: string
@@ -52,7 +51,7 @@ export const createPostByUserId = (
       )
 
       if (response instanceof ValidationError) {
-        res.status(400).json({ message: response.message })
+        res.status(400).json({ code: response.code, message: response.message })
         return
       }
 
@@ -166,15 +165,21 @@ export const deletePostById = (
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const postId = req.params.id
-      const post: Post = await postService.deletePostById(parseInt(postId))
+      const response: Post | ValidationError = await postService.deletePostById(parseInt(postId))
 
-      res.status(200).json({ data: { post } })
-    } catch (e) {
-      if (e.code == ERROR_CODES.NoRecordFound) {
-        res.status(404).send()
-      } else {
-        res.status(500).send()
+      if (response instanceof ValidationError) {
+        switch (response.code) {
+          case ValidationCode.NO_RECORD:
+            res.status(404).json({ code: response.code, message: response.message })
+          default:
+            res.status(400).send()
+        }
+        return
       }
+
+      res.status(200).json({ data: { post: response } })
+    } catch {
+      res.status(500).send()
     }
   }
 }
