@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Inter } from 'next/font/google'
-import { createUser, updateUser, getUserById, deleteUser } from '../client/apiClient'
+import { createUser, updateUser, getUserById, deleteUser, getUserPosts } from '../client/apiClient'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -9,6 +9,7 @@ enum ACTION_TYPE {
   UPDATE,
   GET,
   DELETE,
+  GET_POSTS,
 }
 
 export default function Home() {
@@ -26,7 +27,6 @@ export default function Home() {
   const submitAction = () => {
     switch (actionType) {
       case ACTION_TYPE.CREATE:
-        console.log('submitting create')
         submitCreateUser()
         break
       case ACTION_TYPE.UPDATE:
@@ -37,6 +37,9 @@ export default function Home() {
         break
       case ACTION_TYPE.DELETE:
         submitDeleteUser()
+        break
+      case ACTION_TYPE.GET_POSTS:
+        submitGetUserPosts()
         break
     }
   }
@@ -75,11 +78,18 @@ export default function Home() {
     setResponse(res.data ? res.data : res)
   }
 
+  const submitGetUserPosts = async () => {
+    const res = await getUserPosts(inputId)
+
+    setResponse(res.data ? res.data : res)
+  }
+
   const renderIdInput = () => {
     return (
       actionType == ACTION_TYPE.UPDATE ||
       actionType == ACTION_TYPE.GET ||
-      actionType == ACTION_TYPE.DELETE
+      actionType == ACTION_TYPE.DELETE ||
+      actionType == ACTION_TYPE.GET_POSTS
     )
   }
 
@@ -102,12 +112,21 @@ export default function Home() {
     setInputId('')
   }
 
+  const actionCopy = () => {
+    switch (actionType) {
+      case ACTION_TYPE.GET_POSTS:
+        return 'GET Posts from'
+      default:
+        return ACTION_TYPE[actionType]
+    }
+  }
+
   return (
     <main className={`flex min-h-screen flex-col justify-between px-12 ${inter.className}`}>
       <section className="grid grid-cols-3 gap-4">
         <div className="col-span-1">
           <span>
-            <h1 className="text-lg font-bold">{ACTION_TYPE[actionType]} User </h1>
+            <h1 className="text-lg font-bold">{actionCopy()} User </h1>
             <p
               className="text-indigo-700 underline cursor-pointer"
               onClick={() => toggleAction(ACTION_TYPE.UPDATE)}
@@ -131,6 +150,12 @@ export default function Home() {
               onClick={() => toggleAction(ACTION_TYPE.DELETE)}
             >
               or delete user
+            </p>
+            <p
+              className="text-indigo-700 underline cursor-pointer"
+              onClick={() => toggleAction(ACTION_TYPE.GET_POSTS)}
+            >
+              or get user posts
             </p>
           </span>
           <div className={'flex flex-col'}>

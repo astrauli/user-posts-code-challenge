@@ -80,3 +80,18 @@ export const deleteUser = async (userId: string) => {
     return e
   }
 }
+
+export const getUserPosts = async (userId: string) => {
+  try {
+    const response = await fetch(`http://localhost:3000/api/users/${userId}/posts`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    return await response.json()
+  } catch (e) {
+    console.log(e)
+    return e
+  }
+}
